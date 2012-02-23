@@ -32,7 +32,10 @@ def getjob(id, verified):
     for label in video.labels:
         attributes[label.id] = dict((a.id, a.text) for a in label.attributes)
 
-    logger.debug("Giving user frames {0} to {1} of {2}".format(video.slug,
+    roles = dict((r.id, r.text) for r in session.query(Role))
+    predicates = dict((p.id, p.text) for p in session.query(Predicate))
+
+    logger.debug("Giving user frames {1} to {2} of {0}".format(video.slug,
                                                                segment.start,
                                                                segment.stop))
 
@@ -48,7 +51,9 @@ def getjob(id, verified):
             "jobid":        job.id,
             "training":     int(training),
             "labels":       labels,
-            "attributes":   attributes}
+            "attributes":   attributes,
+            "roles":        roles,
+            "predicates":   predicates}
 
 @handler()
 def getboxesforjob(id):
@@ -59,6 +64,23 @@ def getboxesforjob(id):
         result.append({"label": path.labelid,
                        "boxes": [tuple(x) for x in path.getboxes()],
                        "attributes": attrs})
+    return result
+
+@handler()
+def getpredicateannotationsforjob(id):
+    job = session.query(Job).get(id)
+    result = []
+    for pi in job.predicate_instances:
+        sorted_annotations = sorted(pi.predicate_annotations, key = lambda x: x.frame)
+        annotations = {}
+        for pa in sorted_annotations:
+            a = (pa.frame, pa.roleid, pa.value)
+            if (annotations.has_key(pa.pathid)):
+                annotations[pa.pathid].appends(a)
+            else:
+                annotations[pa.pathid] = [a]
+        result.append({"predicate": pi.predicateid,
+                       "annotations": annotations })
     return result
 
 def readpaths(tracks):
@@ -94,10 +116,33 @@ def readpaths(tracks):
 
         paths.append(path)
     return paths
-
-# TODO:  
-def readpredicates(predicates):
-    return []
+  
+def readpredicates(predicate):
+    predicateInstances = []
+    logger.debug("Reading {0} total predicate instances".format(len(predicate.keys())))
+    
+    predNames = session.query(predicate)
+    
+    for predKey in predicate.keys():
+        pi = PredicateInstance()
+        pi.predicate = predNames.filter(Predicate.text == predKey.split('#')[0])[0]
+        
+        logger.debug("Received a '{0}' predicate".format(pi.predicate.text))
+        
+        for pathid in predicate[predKey].keys():
+            path = session.query(Path).get(pathid)
+            
+            for frame in predicate[predKey][pathid].keys():
+                roleid, value = predicate[predKey][pathid][frame]
+                pa = PredicateAnnotation(predicateinstance = pi)
+                pa.path = path
+                pa.role = session.query(Role).get(roleid)
+                pa.frame = frame
+                pa.value = value
+                
+        predicateInstances.append(pi)
+        
+    return predicateInstances
     
 @handler(post = "json")
 def savejob(id, tracks):
@@ -105,14 +150,14 @@ def savejob(id, tracks):
 
     for path in job.paths:
         session.delete(path)
-#    for predicate in job.predicates:
-#        session.delete(predicate)
+    for pi in job.predicate_instances:
+        session.delete(pi)
     session.commit()
     
-    for path in readpaths(tracks): #readpaths(tracks["tracks"]):
+    for path in readpaths(tracks["tracks"]):
         job.paths.append(path)
-#    for predicate in readpredicates(tracks["predicates"]):
-#        job.predicates.append(predicate)
+    for pi in readpredicates(tracks["predicates"]):
+        job.predicate_instances.append(pi)
     
     session.add(job)
     session.commit()
@@ -120,9 +165,11 @@ def savejob(id, tracks):
 @handler(post = "json")
 def validatejob(id, tracks):
     job = session.query(Job).get(id)
-    paths = readpaths(tracks)
+    paths = readpaths(tracks["tracks"])
+    predicates = readpredicates(tracks["predicates"])
 
-    return job.trainingjob.validator(paths, job.trainingjob.paths)
+    return (job.trainingjob.validator(paths, job.trainingjob.paths) and
+            job.trainingjob.validator(predicates, job.trainingjob.predicates))
 
 @handler()
 def respawnjob(id):

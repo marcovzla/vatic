@@ -279,7 +279,6 @@ class Role(turkic.database.Base):
     def __str__(self):
         return self.text
 
-
 class Predicate(turkic.database.Base):
     __tablename__ = "predicates"
 
@@ -294,10 +293,21 @@ class PredicateInstance(turkic.database.Base):
 
     id = Column(Integer, primary_key = True)
     predicateid = Column(Integer, ForeignKey(Predicate.id))
-    predicate = relationship(Predicate, backref = backref("instances",
+    predicate = relationship(Predicate, backref = backref("predicate_instances",
                                                   cascade = "all,delete"))
     jobid = Column(Integer, ForeignKey(Job.id))
-    job = relationship(Job, backref = backref("predicates", cascade="all,delete"))
+    job = relationship(Job, backref = backref("predicate_instances", cascade="all,delete"))
+    
+    def getuniquepaths(self):
+        pathids = []
+        paths = []
+        for pa in self.predicate_annotations:
+            if (pa.pathid in pathids):
+                continue
+            else:
+                pathids.append(pa.pathid)
+                paths.append(pa.path)
+        return paths
 
 class PredicateAnnotation(turkic.database.Base):
     __tablename__ = "predicate_annotations"
