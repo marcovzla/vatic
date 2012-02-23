@@ -1,7 +1,9 @@
-function PredicateUI(newpredbutton, newpreddialog, videoframe, job, player, predicates) {
+function PredicateUI(newpredbutton, newpreddialog, predcontainer, videoframe, job, player, predicates) {
     var me = this;
     this.newpredbutton = newpredbutton;
     this.newpreddialog = newpreddialog;
+    this.predcontainer = predcontainer;
+    this.pred_by_id = {};
     
     this.setup = function() {
         this.newpredbutton.button({
@@ -19,15 +21,33 @@ function PredicateUI(newpredbutton, newpreddialog, videoframe, job, player, pred
 			width: 350,
 			modal: true,
 			resizable: false,
-			title: 'Select the kind of predicate',
+			title: 'create a predicate',
 			buttons: {
 			    OK: function() {
-			        this.dialog('close');
+			        predicate_id = $('input[name="predicates"]:checked').val();
+			        if (!predicate_id) {
+			            alert('please select a predicate');
+			            return;
+			        }
+			        var new_pred = $('<p>' + me.pred_by_id[predicate_id] + 
+			                         ' ' + (me.predcontainer.children().length+1) + '</p>');
+		            me.predcontainer.append(new_pred);
+		            new_pred.effect('highlight', {}, 'slow');
+			        $(this).dialog('close');
 			    },
 			    Cancel: function() {
-			        this.dialog('close');
+			        $(this).dialog('close');
 			    }
 			}
+        });
+        
+        $.getJSON('/server/getpredicates', function(data) {
+            for (var p in data) {
+                me.pred_by_id[data[p][0]] = data[p][1];
+                me.newpreddialog.append('<input type="radio" name="predicates" id="' +
+                    data[p][0] + '" value="' + data[p][0] + '"><label for="' +
+                    data[p][0] + '">' + data[p][1] + '</label><br>');
+            }
         });
     }
     
