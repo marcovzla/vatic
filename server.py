@@ -117,24 +117,19 @@ def readpaths(tracks):
         paths.append(path)
     return paths
   
-def readpredicates(predicate):
+def readpredicates(predicates, paths):
     predicateInstances = []
-    logger.debug("Reading {0} total predicate instances".format(len(predicate.keys())))
+    logger.debug("Reading {0} total predicate instances".format(len(predicates)))
     
-    predNames = session.query(predicate)
-    
-    for predKey in predicate.keys():
+    for p in predicates:
         pi = PredicateInstance()
-        pi.predicate = predNames.filter(Predicate.text == predKey.split('#')[0])[0]
+        pi.predicate = session.query(Predicate).get(int(p['predicate']))
         
-        logger.debug("Received a '{0}' predicate".format(pi.predicate.text))
-        
-        for pathid in predicate[predKey].keys():
-            path = session.query(Path).get(pathid)
-            
-            for frame in predicate[predKey][pathid].keys():
-                roleid, value = predicate[predKey][pathid][frame]
-                pa = PredicateAnnotation(predicateinstance = pi)
+        for pathid in p['annotations'].keys():
+            path = paths[int(pathid)]
+            for frame, roleid, value in p['annotations'][pathid]:
+                pa = PredicateAnnotation()
+                pa.predicateinstance = pi
                 pa.path = path
                 pa.role = session.query(Role).get(roleid)
                 pa.frame = frame
@@ -145,28 +140,31 @@ def readpredicates(predicate):
     return predicateInstances
     
 @handler(post = "json")
-def savejob(id, tracks):
+def savejob(id, data):
     job = session.query(Job).get(id)
 
     for path in job.paths:
         session.delete(path)
     for pi in job.predicate_instances:
+        for pa in pi.predicate_annotations:
+            session.delete(pa)
         session.delete(pi)
     session.commit()
     
-    for path in readpaths(tracks["tracks"]):
+    paths = readpaths(data["tracks"])
+    for path in paths:
         job.paths.append(path)
-    for pi in readpredicates(tracks["predicates"]):
+    for pi in readpredicates(data["predicates"], paths):
         job.predicate_instances.append(pi)
     
     session.add(job)
     session.commit()
 
 @handler(post = "json")
-def validatejob(id, tracks):
+def validatejob(id, data):
     job = session.query(Job).get(id)
-    paths = readpaths(tracks["tracks"])
-    predicates = readpredicates(tracks["predicates"])
+    paths = readpaths(data["tracks"])
+    predicates = readpredicates(data["predicates"])
 
     return (job.trainingjob.validator(paths, job.trainingjob.paths) and
             job.trainingjob.validator(predicates, job.trainingjob.predicates))
