@@ -269,3 +269,48 @@ class CompletionBonus(turkic.models.BonusSchedule):
         hit.awardbonus(self.amount, "For complete annotation.")
         logger.debug("Awarded completion bonus of ${0:.2f}"
                         .format(self.amount))
+
+class Role(turkic.database.Base):
+    __tablename__ = "roles"
+
+    id = Column(Integer, primary_key = True)
+    text = Column(String(250), unique = True)
+    
+    def __str__(self):
+        return self.text
+
+
+class Predicate(turkic.database.Base):
+    __tablename__ = "predicates"
+
+    id = Column(Integer, primary_key = True)
+    text = Column(String(250), unique = True)
+    
+    def __str__(self):
+        return self.text
+
+class PredicateInstance(turkic.database.Base):
+    __tablename__ = "predicate_instances"
+
+    id = Column(Integer, primary_key = True)
+    predicateid = Column(Integer, ForeignKey(Predicate.id))
+    predicate = relationship(Predicate, backref = backref("instances",
+                                                  cascade = "all,delete"))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref = backref("predicates", cascade="all,delete"))
+
+class PredicateAnnotation(turkic.database.Base):
+    __tablename__ = "predicate_annotations"
+    
+    id = Column(Integer, primary_key = True)
+    predicateinstanceid = Column(Integer, ForeignKey(PredicateInstance.id))
+    predicateinstance = relationship(PredicateInstance, backref = backref("predicate_annotations",
+                                                                          cascade = "all,delete"))
+    pathid = Column(Integer, ForeignKey(Path.id))
+    path = relationship(Path, backref = backref("predicate_annotations",
+                                                cascade = "all,delete"))
+    roleid = Column(Integer, ForeignKey(Role.id))
+    role = relationship(Role, backref = backref("predicate_annotations",
+                                                cascade = "all,delete"))
+    frame = Column(Integer)
+    value = Column(Boolean, default = False)

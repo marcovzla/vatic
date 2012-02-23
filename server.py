@@ -95,16 +95,25 @@ def readpaths(tracks):
         paths.append(path)
     return paths
 
+# TODO:  
+def readpredicates(predicates):
+    return []
+    
 @handler(post = "json")
 def savejob(id, tracks):
     job = session.query(Job).get(id)
 
     for path in job.paths:
         session.delete(path)
+#    for predicate in job.predicates:
+#        session.delete(predicate)
     session.commit()
-    for path in readpaths(tracks):
+    
+    for path in readpaths(tracks): #readpaths(tracks["tracks"]):
         job.paths.append(path)
-
+#    for predicate in readpredicates(tracks["predicates"]):
+#        job.predicates.append(predicate)
+    
     session.add(job)
     session.commit()
 

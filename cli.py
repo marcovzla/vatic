@@ -1122,3 +1122,68 @@ class listvideos(Command):
         else:
             for video in videos.distinct():
                 print video.slug
+
+@handler("Preload database with default roles & predicates")
+class loaddatabase(Command):
+    
+    default_roles = [ "Actor", "Object", "Member", "None" ]
+    
+    default_predicates = ["Approach", "Arrive", "Attach", "Bounce", "Burry",
+                          "Carry", "Catch", "Chase", "Close", "Collide",
+                          "Dig", "Drop", "Enter", "Exchange", "Exit",
+                          "Fall", "Flee", "Fly", "Follow", "Get",
+                          "Give", "Go", "Hand", "Haul", "Have",
+                          "Hit", "Hold", "Jump", "Kick", "Leave",
+                          "Lift", "Move", "Open", "Pass", "Pick-up",
+                          "Push", "Put-down", "Raise", "Receive", "Replace",
+                          "Run", "Snatch", "Stop", "Take", "Throw",
+                          "Touch", "Turn", "Walk" ]
+                          #"Social Group", "Spatio-Temporal Group", "Look-at" ]
+    
+    def setup(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--roles", nargs="+")
+        parser.add_argument("--predicates", nargs="+")
+        return parser
+    
+    def __call__(self, args):
+        
+        commit = False
+        
+        roles = args.roles
+        if (roles != None):
+            if (len(roles) == 1 and roles[0] == 'default'):
+                roles = self.default_roles;
+                print "Loading default roles..."
+            else:
+                print "Loading roles..."
+            
+            existingRoles = session.query(Role)
+            for r in existingRoles:
+                if (r.text in roles):
+                    roles.remove(r.text)
+            for r in roles:
+                role = Role(text = r)
+                session.add(role)
+                commit = True
+        
+        predicates = args.predicates
+        if (predicates != None):
+            if (len(predicates) == 1 and predicates[0] == 'default'):
+                predicates = self.default_predicates;
+                print "Loading default predicates..."
+            else:
+                print "Loading predicates..."
+            
+            existingPredicates = session.query(Predicate)
+            for p in existingPredicates:
+                if (p.text in predicates):
+                    predicates.remove(p.text)
+            for p in predicates:
+                pred = Predicate(text = p)
+                session.add(pred)
+                commit = True
+        
+        if (commit):
+            session.commit()
+            print "Database values successfully loaded."
