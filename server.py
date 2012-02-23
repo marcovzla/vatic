@@ -137,3 +137,11 @@ def respawnjob(id):
     replacement.publish()
     session.add(replacement)
     session.commit()
+    
+@handler()
+def getpredicates():
+    return [(p.id, p.text) for p in session.query(Predicate).all()]
+    
+@handler()
+def getroles():
+    return [(r.id, r.text) for r in session.query(Role).all()]
