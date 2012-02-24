@@ -1,9 +1,14 @@
-function PredicateUI(newpredbutton, newpreddialog, predcontainer, videoframe, job, player, predicates) {
+function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog, videoframe, job, player, tracks, predicates) {
     var me = this;
     this.newpredbutton = newpredbutton;
     this.newpreddialog = newpreddialog;
     this.predcontainer = predcontainer;
+    this.newroledialog = newroledialog;
     this.predname = {};
+    this.rolename = {};
+    this.job = job;
+    this.tracks = tracks;
+    this.predicates = predicates;
     
     this.setup = function() {
         // create newpredbutton
@@ -16,7 +21,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, videoframe, jo
         
         // create newpreddialog
         this.newpreddialog.dialog({
-            title: 'create a predicate',
+            title: 'new predicate',
             autoOpen: false,
             modal: true,
             height: 450,
@@ -24,7 +29,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, videoframe, jo
             buttons: {
                 ok: function() {
                     // get the selected predicate type
-                    pred_id = $('input[name="predicates"]:checked').val();
+                    var pred_id = $('input[name="predicates"]:checked').val();
                     if (!pred_id) {
                         alert('please select a predicate');
                         return;
@@ -35,12 +40,60 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, videoframe, jo
                     var newpredname = me.predname[pred_id];
                     $('<div class="predblock"><div style="float:left">' + 
                       newprednum + ' ' + newpredname +
-	              '</div><div style="float:right"><a href="#">add track</a></div><br></div>')
+	              '</div><div style="float:right"><a class="addrole" href="#">add track</a></div><br></div>')
                         .hide()
-                        .appendTo(me.predcontainer)
+                        .prependTo(me.predcontainer)
                         .show('slow');
 
                     // close dialog
+                    $(this).dialog('close');
+                },
+                cancel: function() {
+                    $(this).dialog('close');
+                }
+            }
+        });
+
+        $('a.addrole').live('click', function(e) {
+            e.preventDefault();
+            var tracknames = {};
+            $('#available_tracks').empty();
+            for (var i in me.tracks.tracks) {
+                tracknames[i] = me.job.labels[me.tracks.tracks[i].label] + ' ' + (parseInt(i) + 1);
+                $('#available_tracks').append('<input type="radio" name="avtracks" id="t' + i +
+                                              '" value="' + i + '"><label for="t' + i + '">' +
+                                              tracknames[i] + '</label><br>');
+            }
+            me.newroledialog
+                .data('link', $(this))
+                .data('tracknames', tracknames)
+                .dialog('open');
+        });
+
+        this.newroledialog.dialog({
+            title: 'add track',
+            autoOpen: false,
+            modal: true,
+            height: 300,
+            width: 400,
+            buttons: {
+                ok: function() {
+                    // get the selected track type
+                    var track_id = $('input[name="avtracks"]:checked').val();
+                    if (!track_id) {
+                        alert('please select a track');
+                        return;
+                    }
+
+                    var role_id = $('#selrole option:selected').val();
+
+                    var tracknames = $(this).data('tracknames');
+                    
+                    $('<p>' + tracknames[track_id] + ' <small>(' + me.rolename[role_id] + ')</small>' + '</p>')
+                        .hide()
+                        .appendTo($(this).data('link').parent().parent())
+                        .show('slow');
+
                     $(this).dialog('close');
                 },
                 cancel: function() {
@@ -56,14 +109,28 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, videoframe, jo
                 var predname = data[p][1];
                 // collect predicate ids and names
                 me.predname[predid] = predname;
-                // add radio buton to newpreddialog
-                me.newpreddialog.append('<input type="radio" name="predicates" id="' +
+                // add radio button to newpreddialog
+                me.newpreddialog.append('<input type="radio" name="predicates" id="p' +
                                         predid + '" value="' + predid +
-                                        '"><label for="' + predid + '">' +
+                                        '"><label for="p' + predid + '">' +
                                         predname + '</label><br>');
             }
         });
     }
+
+    // request list of roles
+    $.getJSON('/server/getroles', function(data) {
+        var select = $('<select id="selrole"></select>');
+        for (var p in data) {
+            var roleid = data[p][0];
+            var rolename = data[p][1];
+            me.rolename[roleid] = rolename;
+            select.append('<option value="' + roleid + '">' + rolename + '</option>');
+        }
+        me.newroledialog.append('<label>role:</label>');
+        me.newroledialog.append(select);
+        me.newroledialog.append('<hr><div id="available_tracks"></div>');
+    });
     
     this.setup();
 }
