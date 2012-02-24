@@ -89,7 +89,9 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 
                     var tracknames = $(this).data('tracknames');
                     
-                    $('<p>' + tracknames[track_id] + ' <small>(' + me.rolename[role_id] + ')</small>' + '</p>')
+                    $('<input type="checkbox" id="cbp' + track_id + '">' + 
+                      '<label for="cbp' + track_id  + '">' + tracknames[track_id] +
+                      ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
                         .hide()
                         .appendTo($(this).data('link').parent().parent())
                         .show('slow');
