@@ -38,9 +38,13 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                     // add new predicate to the list
                     var newprednum = me.predcontainer.children().length + 1;
                     var newpredname = me.predname[pred_id];
+
+					var pred_instance = me.predicates.new_predicate(pred_id);
+
                     $('<div class="predblock"><div style="float:left">' + 
-                      newprednum + ' ' + newpredname +
-	              '</div><div style="float:right"><a class="addrole" href="#">add track</a></div><br></div>')
+                      newpredname + ' ' + newprednum +
+                      '</div><div style="float:right"><a class="addrole" href="#">add track</a></div>' + 
+					  '<input type="hidden" class="predinstance_id" value="' + pred_instance + '"><br></div>')
                         .hide()
                         .prependTo(me.predcontainer)
                         .show('slow');
@@ -87,14 +91,24 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 
                     var role_id = $('#selrole option:selected').val();
 
-                    var tracknames = $(this).data('tracknames');
-                    
-                    $('<input type="checkbox" id="cbp' + track_id + '">' + 
-                      '<label for="cbp' + track_id  + '">' + tracknames[track_id] +
-                      ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
-                        .hide()
-                        .appendTo($(this).data('link').parent().parent())
-                        .show('slow');
+					var predinstance_id = $(this).data('link')
+			                                     .parent()
+			                                     .siblings('.predinstance_id')
+			                                     .val();
+					
+					var added = me.predicates.add_track(predinstance_id, track_id, role_id);
+					if (added) {
+                    	var tracknames = $(this).data('tracknames');
+                   		$('<input type="checkbox" id="cbp' + track_id + '">' + 
+                      	  '<label for="cbp' + track_id  + '">' + tracknames[track_id] +
+                      	  ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
+                        	.hide()
+                        	.appendTo($(this).data('link').parent().parent())
+                        	.show('slow');
+					}
+					else {
+						alert('track is already in predicate');
+					}
 
                     $(this).dialog('close');
                 },
@@ -141,7 +155,25 @@ function PredicateCollection(player, job) {
     var me = this;
     this.player = player;
     this.job = job;
+	this.data = [];
     
+	this.new_predicate = function(pred_id) {
+		var idx = me.data.length;
+		me.data.push({
+			predicate: pred_id,
+			annotations: {}
+		});
+		return idx;
+	}
+
+	this.add_track = function(idx, track_id, role_id) {
+		if (track_id in me.data[idx]['annotations']) {
+			return false;
+		}
+		me.data[idx]['annotations'][track_id] = [];
+		return true;
+	}
+	
     this.serialize = function() {
         return '[{"predicate":35,"annotations":{"0":[[10,1,true],[70,1,false]],"1":[[25,2,true],[100,2,false],[120,3,true]]}}]';
     };
