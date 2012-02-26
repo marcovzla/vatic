@@ -7,6 +7,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
     this.predname = {};
     this.rolename = {};
     this.job = job;
+	this.player = player;
     this.tracks = tracks;
     this.predicates = predicates;
     
@@ -96,11 +97,12 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 			                                     .siblings('.predinstance_id')
 			                                     .val();
 					
-					var added = me.predicates.add_track(predinstance_id, track_id, role_id);
+					var added = me.predicates.add_track(predinstance_id, track_id);
 					if (added) {
                     	var tracknames = $(this).data('tracknames');
-                   		$('<input type="checkbox" id="cbp' + track_id + '">' + 
-                      	  '<label for="cbp' + track_id  + '">' + tracknames[track_id] +
+                   		$('<input type="checkbox" class="cbtrack" id="cbp' + predinstance_id + '_' + track_id +
+						  '" value="' + track_id + '_' + role_id + '">' + 
+                      	  '<label for="cbp' + predinstance_id + '_' + track_id  + '">' + tracknames[track_id] +
                       	  ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
                         	.hide()
                         	.appendTo($(this).data('link').parent().parent())
@@ -117,6 +119,26 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 }
             }
         });
+
+        $('input.cbtrack').live('click', function() {
+            var predinstance_id = $(this).siblings('.predinstance_id').val();
+			var trackrole = $(this).val().split('_');
+			me.predicates.add_annotation(predinstance_id, trackrole[0], me.player.frame, trackrole[1], this.checked);
+		});
+
+		this.player.onupdate.push(function() {
+			me.update_checkboxes();
+		});
+
+		this.update_checkboxes = function() {
+			var frame = me.player.frame;
+            for (var idx in me.predicates.data) {
+				for (var track_id in me.predicates.data[idx]['annotations']) {
+					var val = me.predicates.getval(idx, track_id, frame);
+					$('#cbp' + idx + '_' + track_id).attr('checked', val);
+				}
+			}
+		}
         
         // request list of predicates 
         $.getJSON('/server/getpredicates', function(data) {
@@ -160,21 +182,38 @@ function PredicateCollection(player, job) {
 	this.new_predicate = function(pred_id) {
 		var idx = me.data.length;
 		me.data.push({
-			predicate: pred_id,
+			predicate: parseInt(pred_id),
 			annotations: {}
 		});
 		return idx;
 	}
 
-	this.add_track = function(idx, track_id, role_id) {
+	this.add_track = function(idx, track_id) {
 		if (track_id in me.data[idx]['annotations']) {
 			return false;
 		}
 		me.data[idx]['annotations'][track_id] = [];
 		return true;
 	}
+
+	this.add_annotation = function(idx, track_id, frame, role_id, value) {
+		me.data[idx]['annotations'][track_id].push([frame, parseInt(role_id), value]);
+	}
+
+	this.getval = function(idx, track_id, frame) {
+		var val = false;
+		var annotations = me.data[idx]['annotations'][track_id];
+		for (var i in annotations) {
+			var f = annotations[i][0];
+			if (f > frame) {
+				break;
+			}
+			val = annotations[i][2];
+		}
+		return val;
+	}
 	
     this.serialize = function() {
-        return '[{"predicate":35,"annotations":{"0":[[10,1,true],[70,1,false]],"1":[[25,2,true],[100,2,false],[120,3,true]]}}]';
+        return JSON.stringify(me.data);
     };
 }
