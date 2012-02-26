@@ -404,6 +404,7 @@ class DumpCommand(Command):
         def bind(self):
             for path in self.paths:
                 self.boxes = Path.bindattributes(path.attributes, self.boxes)
+                self.boxes = Path.bindpredicates(path.predicate_annotations, self.boxes)
 
     def getdata(self, args):
         response = []
@@ -627,7 +628,16 @@ class dump(DumpCommand):
                     data['lost'] = box.lost
                     data['occluded'] = box.occluded
                     data['label'] = track.label
-                    data['attributes'] = box.attributes
+                    attributes = []; predicates = [];
+                    for attr in box.attributes:
+                        if (type(attr) == PredicateAnnotation):
+                            predicates.append({"predicate" : attr.predicateinstance.predicate.text,
+                                               "id" : attr.predicateinstanceid,
+                                               "role" : attr.role.text })
+                        else:
+                            attributes.append(attr)
+                    data['attributes'] = attributes
+                    data['predicates'] = predicates
                     data['generated'] = box.generated
                     results.append(data)
 
@@ -654,10 +664,21 @@ class dump(DumpCommand):
                 file.write(" ybr=\"{0}\"".format(box.ybr))
                 file.write(" outside=\"{0}\"".format(box.lost))
                 file.write(" occluded=\"{0}\">".format(box.occluded))
+                if (len(box.attributes) > 0):
+                    file.write("\n")
                 for attr in box.attributes:
-                    file.write("<attribute id=\"{0}\">{1}</attribute>".format(
-                               attr.id, attr.text))
-                file.write("</box>\n")
+                    if (type(attr) == PredicateAnnotation):
+                        file.write("\t\t\t<predicate id=\"{0}\" role =\"{2}\">{1}</predicate>"
+                               .format(attr.predicateinstanceid, attr.predicateinstance.predicate.text,
+                                       attr.role.text))
+                    else:
+                        file.write("\t\t\t<attribute id=\"{0}\">{1}</attribute>".format(
+                                attr.id, attr.text))
+                if (len(box.attributes) > 0):
+                    file.write("\n")
+                    file.write("\t\t</box>\n")
+                else:
+                    file.write("</box>\n")
             file.write("\t</track>\n")
         file.write("</annotations>\n")
 
@@ -675,7 +696,16 @@ class dump(DumpCommand):
                 boxdata['ybr'] = box.ybr
                 boxdata['outside'] = box.lost
                 boxdata['occluded'] = box.occluded
-                boxdata['attributes'] = box.attributes
+                attributes = []; predicates = [];
+                for attr in box.attributes:
+                    if (type(attr) == PredicateAnnotation):
+                        predicates.append({"predicate" : attr.predicateinstance.predicate.text,
+                                           "id" : attr.predicateinstanceid,
+                                           "role" : attr.role.text })
+                    else:
+                        attributes.append(attr)
+                boxdata['attributes'] = attributes
+                boxdata['predicates'] = predicates
                 boxes[int(box.frame)] = boxdata
             result['boxes'] = boxes
             annotations[int(id)] = result
@@ -719,9 +749,14 @@ class dump(DumpCommand):
                 file.write(track.label)
                 file.write("\"")
                 for attr in box.attributes:
-                    file.write(" \"")
-                    file.write(attr.text)
-                    file.write("\"")
+                    if (type(attr) == PredicateAnnotation):
+                        file.write(" \"")
+                        file.write(str(attr))
+                        file.write("\"")
+                    else:
+                        file.write(" \"")
+                        file.write(attr.text)
+                        file.write("\"")
                 file.write("\n")
 
     def dumplabelme(self, file, data, slug, folder):
@@ -1167,7 +1202,7 @@ class listvideos(Command):
 @handler("Preload database with default roles & predicates")
 class loaddatabase(Command):
     
-    default_roles = [ "Actor", "Object", "Member", "None" ]
+    default_roles = [ "None", "Actor", "Object", "Member" ]
     
     default_predicates = ["Approach", "Arrive", "Attach", "Bounce", "Burry",
                           "Carry", "Catch", "Chase", "Close", "Collide",

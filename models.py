@@ -188,6 +188,34 @@ class Path(turkic.database.Base):
                             box.attributes.append(last.attribute)
 
         return boxes
+    
+    @classmethod 
+    def bindpredicates(cls, predicate_annotations, boxes):        
+        predicate_annotations = sorted(predicate_annotations, key = lambda x: x.predicateinstanceid)
+        predicate_annotations = sorted(predicate_annotations, key = lambda x: x.predicateinstance.predicate.text)
+        predicate_annotations = sorted(predicate_annotations, key = lambda x: x.frame)
+
+        byid = {}
+        for pa in predicate_annotations:
+            if pa.predicateinstanceid not in byid:
+                byid[pa.predicateinstanceid] = []
+            byid[pa.predicateinstanceid].append(pa)
+
+        for pas in byid.values():
+            for prev, cur in zip(pas, pas[1:]):
+                if prev.value:
+                    for box in boxes:
+                        if prev.frame <= box.frame < cur.frame:
+                            if prev not in box.attributes:
+                                box.attributes.append(prev)
+            last = pas[-1]
+            if last.value:
+                for box in boxes:
+                    if last.frame <= box.frame:
+                        if last not in box.attributes:
+                            box.attributes.append(last)
+
+        return boxes
 
     def __repr__(self):
         return "<Path {0}>".format(self.id)
@@ -309,6 +337,9 @@ class PredicateInstance(turkic.database.Base):
                 paths.append(pa.path)
         return paths
 
+    def __str__(self):
+        return '{0}#{1}'.format(self.predicate, self.id)
+    
 class PredicateAnnotation(turkic.database.Base):
     __tablename__ = "predicate_annotations"
     
@@ -324,3 +355,6 @@ class PredicateAnnotation(turkic.database.Base):
                                                 cascade = "all,delete"))
     frame = Column(Integer)
     value = Column(Boolean, default = False)
+
+    def __str__(self):
+        return '{0}:{1}'.format(self.predicateinstance, self.role)

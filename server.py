@@ -76,7 +76,7 @@ def getpredicateannotationsforjob(id):
         for pa in sorted_annotations:
             a = (pa.frame, pa.roleid, pa.value)
             if (annotations.has_key(pa.pathid)):
-                annotations[pa.pathid].appends(a)
+                annotations[pa.pathid].append(a)
             else:
                 annotations[pa.pathid] = [a]
         result.append({"predicate": pi.predicateid,
