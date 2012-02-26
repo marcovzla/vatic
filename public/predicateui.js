@@ -197,7 +197,15 @@ function PredicateCollection(player, job) {
 	}
 
 	this.add_annotation = function(idx, track_id, frame, role_id, value) {
-		me.data[idx]['annotations'][track_id].push([frame, parseInt(role_id), value]);
+		var annotations = me.data[idx]['annotations'][track_id];
+		for (var i in annotations) {
+			var f = annotations[i][0];
+			if (f >= frame) {
+				annotations.splice(i);
+				break;
+			}
+		}
+		annotations.push([frame, parseInt(role_id), value]);
 	}
 
 	this.getval = function(idx, track_id, frame) {
