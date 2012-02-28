@@ -40,7 +40,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                     var newprednum = me.predcontainer.children().length + 1;
                     var newpredname = me.predname[pred_id];
 
-					var pred_instance = me.predicates.new_predicate(pred_id);
+                    var pred_instance = me.predicates.new_predicate(pred_id);
 
                     $('<div class="predblock"><div style="float:left">' + 
                       newpredname + ' ' + newprednum +
@@ -169,6 +169,35 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         me.newroledialog.append(select);
         me.newroledialog.append('<hr><div id="available_tracks"></div>');
     });
+
+    this.draw_data = function() {
+        $.getJSON('/server/getpredicateannotationsforjob/' + me.job.jobid, function(data) {
+            if (data.length > 0) {
+                me.predicates.data = data;
+                for (var i in data) {
+                    var newprednum = parseInt(i) + 1;
+                    var newpredname = me.predname[me.predicates.data[i]['predicate']];
+                    var pred_instance = i;
+                    var pred = $('<div class="predblock"><div style="float:left">' +
+                        newpredname + ' ' + newprednum +
+                        '</div><div style="float:right"><a class="addrole" href="#">add track</a></div>' + 
+                        '<input type="hidden" class="predinstance_id" value="' + pred_instance + '"><br></div>')
+                            .prependTo(me.predcontainer);
+
+                    for (var j in me.predicates.data[i]['annotations']) {
+                        var track_id = j;
+                        var role_id = me.predicates.data[i]['annotations'][j][0][1]; // XXX not safe
+                        var trackname = me.job.labels[me.tracks.tracks[j].label] + ' ' + (parseInt(j) + 1);
+                        $('<input type="checkbox" class="cbtrack" id="cbp' + pred_instance + '_' + track_id +
+                            '" value="' + track_id + '_' + role_id + '">' + 
+                            '<label for="cbp' + pred_instance + '_' + track_id  + '">' + trackname +
+                            ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
+                                .appendTo(pred);
+                    }
+                }
+            }
+        });
+    }
     
     this.setup();
 }

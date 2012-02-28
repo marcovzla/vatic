@@ -69,18 +69,25 @@ def getboxesforjob(id):
 @handler()
 def getpredicateannotationsforjob(id):
     job = session.query(Job).get(id)
+    def relid(pathid):
+        for i,p in enumerate(job.paths):
+            if p.id == pathid:
+                return i
     result = []
     for pi in job.predicate_instances:
-        sorted_annotations = sorted(pi.predicate_annotations, key = lambda x: x.frame)
+        sorted_annotations = sorted(pi.predicate_annotations, 
+                                    key=lambda x: x.frame)
         annotations = {}
         for pa in sorted_annotations:
             a = (pa.frame, pa.roleid, pa.value)
-            if (annotations.has_key(pa.pathid)):
-                annotations[pa.pathid].append(a)
+            myid = relid(pa.pathid)
+            if annotations.has_key(myid):
+                annotations[myid].append(a)
             else:
-                annotations[pa.pathid] = [a]
+                annotations[myid] = [a]
         result.append({"predicate": pi.predicateid,
                        "annotations": annotations })
+
     return result
 
 def readpaths(tracks):

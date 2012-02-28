@@ -1,4 +1,5 @@
 var ui_disabled = 0;
+var predicateui = null;
 
 function ui_build(job)
 {
@@ -8,7 +9,7 @@ function ui_build(job)
     var tracks = new TrackCollection(player, job);
     var predicates = new PredicateCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
-    var predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
+    predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
 
     ui_setupbuttons(job, player, tracks);
     ui_setupslider(player);
@@ -439,7 +440,10 @@ function ui_loadprevious(job, objectui)
                                      data[i]["boxes"],
                                      data[i]["attributes"]);
         }
+
+        predicateui.draw_data();
     });
+
 }
 
 function ui_setupsubmit(job, tracks, predicates)
