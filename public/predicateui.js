@@ -148,7 +148,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         }
 
         me.rolename = job.roles;
-        var select = $('<select id="setrole"></select>');
+        var select = $('<select id="selrole"></select>');
         for (var r in me.rolename) {
             select.append('<option value="' + r + '">' + me.rolename[r] + '</option>');
         }
