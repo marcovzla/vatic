@@ -485,6 +485,7 @@ function TrackObject(job, player, container, color)
             if (window.confirm("Delete the " + me.job.labels[me.label] + " " + (me.id + 1) + " track? If the object just left the view screen, click the \"Outside of view frame\" check box instead."))
             {
                 me.remove();
+                predicateui.remove_track(me.id);
                 eventlog("removeobject", "Deleted an object");
             }
         });

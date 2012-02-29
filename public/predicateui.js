@@ -157,31 +157,46 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         me.newroledialog.append('<hr><div id="available_tracks"></div>');
     }
 
+    this.remove_track = function(track_id) {
+        me.predicates.remove_track(track_id);
+        me.predcontainer.empty();
+        me.draw_my_data(track_id);
+    }
+
+    this.draw_my_data = function(deleted_track_id) {
+        for (var i in me.predicates.data) {
+            var newprednum = parseInt(i) + 1;
+            var newpredname = me.predname[me.predicates.data[i]['predicate']];
+            var pred_instance = i;
+            var pred = $('<div class="predblock"><div style="float:left">' +
+                         newpredname + ' ' + newprednum +
+                         '</div><div style="float:right"><a class="addrole" href="#">add track</a></div>' + 
+                         '<input type="hidden" class="predinstance_id" value="' + pred_instance + '"><br></div>')
+                           .prependTo(me.predcontainer);
+
+            for (var j in me.predicates.data[i]['annotations']) {
+                var track_id = j;
+                var role_id = me.predicates.data[i]['annotations'][j][0][1]; // XXX not safe
+                if (deleted_track_id !== undefined && parseInt(deleted_track_id) >= parseInt(j)) {
+                    var trackname = me.job.labels[me.tracks.tracks[j].label] + ' ' + (parseInt(j) + 2);
+                }
+                else {
+                    var trackname = me.job.labels[me.tracks.tracks[j].label] + ' ' + (parseInt(j) + 1);
+                }
+                $('<input type="checkbox" class="cbtrack" id="cbp' + pred_instance + '_' + track_id +
+                  '" value="' + track_id + '_' + role_id + '">' + 
+                  '<label for="cbp' + pred_instance + '_' + track_id  + '">' + trackname +
+                  ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
+                    .appendTo(pred);
+            }
+        }
+    }
+
     this.draw_data = function() {
         $.getJSON('/server/getpredicateannotationsforjob/' + me.job.jobid, function(data) {
             if (data.length > 0) {
                 me.predicates.data = data;
-                for (var i in data) {
-                    var newprednum = parseInt(i) + 1;
-                    var newpredname = me.predname[me.predicates.data[i]['predicate']];
-                    var pred_instance = i;
-                    var pred = $('<div class="predblock"><div style="float:left">' +
-                        newpredname + ' ' + newprednum +
-                        '</div><div style="float:right"><a class="addrole" href="#">add track</a></div>' + 
-                        '<input type="hidden" class="predinstance_id" value="' + pred_instance + '"><br></div>')
-                            .prependTo(me.predcontainer);
-
-                    for (var j in me.predicates.data[i]['annotations']) {
-                        var track_id = j;
-                        var role_id = me.predicates.data[i]['annotations'][j][0][1]; // XXX not safe
-                        var trackname = me.job.labels[me.tracks.tracks[j].label] + ' ' + (parseInt(j) + 1);
-                        $('<input type="checkbox" class="cbtrack" id="cbp' + pred_instance + '_' + track_id +
-                            '" value="' + track_id + '_' + role_id + '">' + 
-                            '<label for="cbp' + pred_instance + '_' + track_id  + '">' + trackname +
-                            ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
-                                .appendTo(pred);
-                    }
-                }
+                me.draw_my_data();
             }
         });
     }
@@ -211,6 +226,29 @@ function PredicateCollection(player, job) {
 		me.data[idx]['annotations'][track_id] = [];
 		return true;
 	}
+
+    this.remove_track = function(track_id) {
+        var data = [];
+        for (var pred_id in me.data) {
+            var pred = me.data[pred_id];
+            var pred2 = {};
+            pred2['predicate'] = pred['predicate'];
+            pred2['annotations'] = [];
+            for (var tid in pred['annotations']) {
+                if (tid == track_id) {
+                    continue;
+                }
+                else if (parseInt(tid) > parseInt(track_id)) {
+                    pred2['annotations'][(parseInt(tid)-1)+''] = pred['annotations'][tid];
+                }
+                else {
+                    pred2['annotations'][tid] = pred['annotations'][tid];
+                }
+            }
+            data.push(pred2);
+        }
+        me.data = data;
+    }
 
 	this.add_annotation = function(idx, track_id, frame, role_id, value) {
 		var annotations = me.data[idx]['annotations'][track_id];
