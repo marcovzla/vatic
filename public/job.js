@@ -39,6 +39,8 @@ function job_import(data)
     job.labels = data["labels"];
     job.attributes = data["attributes"];
     job.training = parseInt(data["training"]);
+    job.predicates = data['predicates'];
+    job.roles = data['roles'];
 
     console.log("Job configured!");
     console.log("  Slug: " + job.slug);

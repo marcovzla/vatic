@@ -140,35 +140,22 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 			}
 		}
         
-        // request list of predicates 
-        $.getJSON('/server/getpredicates', function(data) {
-            for (var p in data) {
-                var predid = data[p][0];
-                var predname = data[p][1];
-                // collect predicate ids and names
-                me.predname[predid] = predname;
-                // add radio button to newpreddialog
-                me.newpreddialog.append('<input type="radio" name="predicates" id="p' +
-                                        predid + '" value="' + predid +
-                                        '"><label for="p' + predid + '">' +
-                                        predname + '</label><br>');
-            }
-        });
-    }
+        me.predname = job.predicates;
+        for (var p in me.predname) {
+            me.newpreddialog.append('<input type="radio" name="predicates" id="p' +
+                                    p + '" value="' + p + '"><label for="p' + p + '">' +
+                                    me.predname[p] + '</label><br>');
+        }
 
-    // request list of roles
-    $.getJSON('/server/getroles', function(data) {
-        var select = $('<select id="selrole"></select>');
-        for (var p in data) {
-            var roleid = data[p][0];
-            var rolename = data[p][1];
-            me.rolename[roleid] = rolename;
-            select.append('<option value="' + roleid + '">' + rolename + '</option>');
+        me.rolename = job.roles;
+        var select = $('<select id="setrole"></select>');
+        for (var r in me.rolename) {
+            select.append('<option value="' + r + '">' + me.rolename[r] + '</option>');
         }
         me.newroledialog.append('<label>role:</label>');
         me.newroledialog.append(select);
         me.newroledialog.append('<hr><div id="available_tracks"></div>');
-    });
+    }
 
     this.draw_data = function() {
         $.getJSON('/server/getpredicateannotationsforjob/' + me.job.jobid, function(data) {
