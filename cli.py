@@ -1202,9 +1202,9 @@ class listvideos(Command):
 @handler("Preload database with default roles & predicates")
 class loaddatabase(Command):
     
-    default_roles = [ "None", "Actor", "Object", "Member" ]
+    minds_roles = [ "None", "Actor", "Acted On", "Location", "Member", "Object", "Instrument" ]
     
-    default_predicates = ["Approach", "Arrive", "Attach", "Bounce", "Burry",
+    minds_predicates = ["Approach", "Arrive", "Attach", "Bounce", "Bury",
                           "Carry", "Catch", "Chase", "Close", "Collide",
                           "Dig", "Drop", "Enter", "Exchange", "Exit",
                           "Fall", "Flee", "Fly", "Follow", "Get",
@@ -1213,7 +1213,8 @@ class loaddatabase(Command):
                           "Lift", "Move", "Open", "Pass", "Pick-up",
                           "Push", "Put-down", "Raise", "Receive", "Replace",
                           "Run", "Snatch", "Stop", "Take", "Throw",
-                          "Touch", "Turn", "Walk" ]
+                          "Touch", "Turn", "Walk",
+                          "Group" ]
                           #"Social Group", "Spatio-Temporal Group", "Look-at" ]
     
     def setup(self):
@@ -1228,9 +1229,9 @@ class loaddatabase(Command):
         
         roles = args.roles
         if (roles != None):
-            if (len(roles) == 1 and roles[0] == 'default'):
-                roles = self.default_roles;
-                print "Loading default roles..."
+            if (len(roles) == 1 and roles[0] == 'minds-eye'):
+                roles = self.minds_roles;
+                print "Loading default mind's eye roles..."
             else:
                 print "Loading roles..."
             
@@ -1245,9 +1246,9 @@ class loaddatabase(Command):
         
         predicates = args.predicates
         if (predicates != None):
-            if (len(predicates) == 1 and predicates[0] == 'default'):
-                predicates = self.default_predicates;
-                print "Loading default predicates..."
+            if (len(predicates) == 1 and predicates[0] == 'minds-eye'):
+                predicates = self.minds_predicates;
+                print "Loading default mind's eye predicates..."
             else:
                 print "Loading predicates..."
             
