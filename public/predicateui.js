@@ -177,7 +177,8 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             for (var j in me.predicates.data[i]['annotations']) {
                 var track_id = j;
                 var role_id = me.predicates.data[i]['annotations'][j][0][1]; // XXX not safe
-                if (deleted_track_id !== undefined && parseInt(deleted_track_id) >= parseInt(j)) {
+                if (deleted_track_id !== undefined && parseInt(deleted_track_id) <= parseInt(j)) {
+                    alert(deleted_track_id + ' >= ' + j);
                     var trackname = me.job.labels[me.tracks.tracks[j].label] + ' ' + (parseInt(j) + 2);
                 }
                 else {
@@ -235,11 +236,13 @@ function PredicateCollection(player, job) {
             pred2['predicate'] = pred['predicate'];
             pred2['annotations'] = [];
             for (var tid in pred['annotations']) {
-                if (tid == track_id) {
+                var ntid = parseInt(tid);
+                var ntrack_id = parseInt(track_id);
+                if (ntid === ntrack_id) {
                     continue;
                 }
-                else if (parseInt(tid) > parseInt(track_id)) {
-                    pred2['annotations'][(parseInt(tid)-1)+''] = pred['annotations'][tid];
+                else if (ntid > ntrack_id) {
+                    pred2['annotations'][(ntid-1)+''] = pred['annotations'][tid];
                 }
                 else {
                     pred2['annotations'][tid] = pred['annotations'][tid];
