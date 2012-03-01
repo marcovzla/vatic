@@ -81,6 +81,9 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             modal: true,
             height: 300,
             width: 400,
+            close: function() {
+                $('#selrole option:eq(0)').attr('selected', true);
+            },
             buttons: {
                 ok: function() {
                     // get the selected track type
