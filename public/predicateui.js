@@ -110,6 +110,8 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                         	.hide()
                         	.appendTo($(this).data('link').parent().parent())
                         	.show('slow');
+                        // tracks should be added checked by default
+                        $('#cbp' + predinstance_id + '_' + track_id).attr('checked', true).click();
 					}
 					else {
 						alert('track is already in predicate');
