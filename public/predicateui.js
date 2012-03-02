@@ -101,21 +101,19 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 			                                     .val();
 					
 					var added = me.predicates.add_track(predinstance_id, track_id);
-					if (added) {
-                   		$('<input type="checkbox" class="cbtrack" id="cbp' + predinstance_id + '_' + track_id +
-						  '" value="' + track_id + '_' + role_id + '">' + 
-                      	  '<label for="cbp' + predinstance_id + '_' + track_id  + '">' + me.track_name(track_id) +
-                      	  ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
-                        	.hide()
-                        	.appendTo($(this).data('link').parent().parent())
-                        	.show('slow');
-                        // tracks should be added checked by default
-                        $('#cbp' + predinstance_id + '_' + track_id).attr('checked', true).click();
-					}
-					else {
-						alert('track is already in predicate');
-					}
-
+                    if (!added) {
+                        alert('track is already in predicate');
+                        return;
+                    }
+                    $('<input type="checkbox" class="cbtrack" id="cbp' + predinstance_id + '_' + track_id +
+                      '" value="' + track_id + '_' + role_id + '">' + 
+                      '<label for="cbp' + predinstance_id + '_' + track_id  + '">' + me.track_name(track_id) +
+                      ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
+                        .hide()
+                        .appendTo($(this).data('link').parent().parent())
+                        .show('slow');
+                    // tracks should be added checked by default
+                    $('#cbp' + predinstance_id + '_' + track_id).attr('checked', true).click();
                     $(this).dialog('close');
                 },
                 cancel: function() {
