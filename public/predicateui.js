@@ -205,6 +205,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                     .appendTo(pred);
             }
         }
+        me.update_checkboxes();
     }
 
     this.draw_data = function() {
