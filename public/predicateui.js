@@ -63,6 +63,9 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             e.preventDefault();
             $('#available_tracks').empty();
             for (var i in me.tracks.tracks) {
+                if (me.tracks.tracks[i].deleted) {
+                    continue;
+                }
                 $('#available_tracks').append('<input type="radio" name="avtracks" id="t' + i +
                                               '" value="' + i + '"><label for="t' + i + '">' +
                                               me.track_name(i) + '</label><br>');
