@@ -440,3 +440,9 @@ code
     padding: 2px 3px;
 }
 
+#predicatecontainer
+{
+    overflow : auto;
+    height : 100%;
+}
+
