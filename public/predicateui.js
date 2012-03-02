@@ -165,8 +165,18 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
     }
 
     this.track_name = function(track_id) {
+        track_id = parseInt(track_id);
+        if (me.tracks.tracks[track_id].deleted) {
+            return; // XXX
+        }
         var objects = $('#objectcontainer').children().filter('.trackobject');
-        var idx = objects.length - parseInt(track_id) - 1;
+        var tid = 0;
+        for (var i = 0; i < track_id; i += 1) {
+            if (!me.tracks.tracks[i].deleted) {
+                tid += 1;
+            }
+        }
+        var idx = objects.length - tid - 1;
         return objects.eq(idx).find('.trackobjectheader > strong').text();
     }
 
