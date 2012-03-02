@@ -751,7 +751,7 @@ class dump(DumpCommand):
                 for attr in box.attributes:
                     if (type(attr) == PredicateAnnotation):
                         file.write(" \"")
-                        file.write(str(attr))
+                        file.write(str(attr).replace(' ', '-'))
                         file.write("\"")
                     else:
                         file.write(" \"")
@@ -1202,7 +1202,8 @@ class listvideos(Command):
 @handler("Preload database with default roles & predicates")
 class loaddatabase(Command):
     
-    minds_roles = [ "None", "Actor", "Acted On", "Location", "Member", "Object", "Instrument" ]
+    minds_roles = [ "None", "Actor", "Acted-on", "Instrument", "Location", "Object" ]
+                    # "Member"]
     
     minds_predicates = ["Approach", "Arrive", "Attach", "Bounce", "Bury",
                           "Carry", "Catch", "Chase", "Close", "Collide",
@@ -1213,9 +1214,8 @@ class loaddatabase(Command):
                           "Lift", "Move", "Open", "Pass", "Pick-up",
                           "Push", "Put-down", "Raise", "Receive", "Replace",
                           "Run", "Snatch", "Stop", "Take", "Throw",
-                          "Touch", "Turn", "Walk",
-                          "Group" ]
-                          #"Social Group", "Spatio-Temporal Group", "Look-at" ]
+                          "Touch", "Turn", "Walk" ]
+                        # "Group", "Look-at" ]
     
     def setup(self):
         parser = argparse.ArgumentParser()
