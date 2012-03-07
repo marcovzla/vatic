@@ -13,6 +13,8 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
             disabled: false
         }).click(function() {
             me.newsentencedialog.dialog('open');
+            // deactivate key bindings
+            ui_disabled = 1;
         });
 
         this.newsentencedialog.dialog({
@@ -28,6 +30,10 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                 cancel: function() {
                     $(this).dialog('close');
                 }
+            },
+            close: function() {
+                // activate key bindings
+                ui_disabled = 0;
             }
         });
     }
