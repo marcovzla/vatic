@@ -123,7 +123,19 @@ def readpaths(tracks):
 
         paths.append(path)
     return paths
-  
+
+@handler()
+def getsentenceannotationsforjob(id):
+    job = session.query(Job).get(id)
+    results = []
+    for s in job.sentences:
+        annotations = [(a.frame, a.value) for a in s.annotations]
+        results.append({
+            'sentence': s.text,
+            'annotations': annotations,
+        })
+    return results
+
 def readpredicates(predicates, paths):
     predicateInstances = []
     logger.debug("Reading {0} total predicate instances".format(len(predicates)))

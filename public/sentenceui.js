@@ -72,9 +72,32 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
         this.player.onupdate.push(function() {
             me.update_checkboxes();
         });
+
+        this.draw_data = function() {
+            $.getJSON('/server/getsentenceannotationsforjob/' + me.job.jobid, function(data) {
+                if (data.length > 0) {
+                    me.sentences.data = data;
+                    me.draw_my_data();
+                }
+            });
+        }
+
+        this.draw_my_data = function() {
+            for (var i in me.sentences.data) {
+                 $('<input type="checkbox" class="cbsent" id="cbs' +
+                   i + '" value="' + i +'">' + '<label for="cbs' + i +
+                   '">' + me.sentences.data[i]['sentence'] +
+                   '</label><br>')
+                        .hide()
+                        .appendTo(me.sentencecontainer)
+                        .show('slow');
+            }
+            me.update_checkboxes();
+        }
     }
 
     this.setup();
+    this.draw_data();
 }
 
 function SentenceCollection(player, job) {
