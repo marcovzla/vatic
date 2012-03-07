@@ -8,8 +8,10 @@ function ui_build(job)
     var player = new VideoPlayer(videoframe, job);
     var tracks = new TrackCollection(player, job);
     var predicates = new PredicateCollection(player, job);
+    var sentences = new SentenceCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
     predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
+    var sentenceui = new SentenceUI($('#newsentencebutton'), $('#newsentencedialog'), $('#sentencecontainer'), job, player, sentences);
 
     ui_setupbuttons(job, player, tracks);
     ui_setupslider(player);
@@ -35,11 +37,13 @@ function ui_setup(job)
             "<td><div id='instructionsbutton' class='button'>Instructions</div><div id='instructions'>Annotate every object, even stationary and obstructed objects, for the entire video.</td>" +
             "<td><div id='topbar'></div></td>" +
             "<td><div id='predicatestopbar'></div></td>" +
+            "<td><div id='sentencestopbar'></div></td>" +
         "</tr>" +
         "<tr>" +
               "<td><div id='videoframe'></div></td>" + 
               "<td rowspan='2'><div id='sidebar'></div></td>" +
               "<td rowspan='2'><div id='predicatesidebar'></div></td>" +
+              "<td rowspan='2'><div id='sentencesidebar'></div></td>" +
           "</tr>" + 
           "<tr>" +
               "<td><div id='bottombar'></div></td>" + 
@@ -64,6 +68,8 @@ function ui_setup(job)
                        
     $("#predicatesidebar").css({"height": job.height + "px",
                                 "width": "205px"});
+    $('#sentencesidebar').css({'height': job.height + 'px',
+                               'width': '205px'});
 
     $("#annotatescreen").css("width", (playerwidth + 205) + "px");
 
@@ -76,9 +82,12 @@ function ui_setup(job)
         
     $("#predicatestopbar").append("<div id='newpredicatecontainer'>" +
         "<div class='button' id='newpredicatebutton'>New Predicate</div></div>");
+    $('#sentencestopbar').append('<div id="newsentencecontainer">' +
+            '<div class="button" id="newsentencebutton">New Sentence</div></div>');
 
     $("<div id='objectcontainer'></div>").appendTo("#sidebar");
     $("<div id='predicatecontainer'></div>").appendTo("#predicatesidebar");
+    $('<div id="sentencecontainer"></div>').appendTo('#sentencesidebar');
 
     $("<div class='button' id='openadvancedoptions'>Options</div>")
         .button({
