@@ -33,9 +33,10 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
 
                     var sent_id = me.sentences.add_sentence(sent);
 
-                    $('<input type="checkbox" id="s' + sent_id + '" value="' + 
-                      sent_id +'">' + '<label for="s' + sent_id + '">' +
-                      sent + '</label><br>')
+                    $('<input type="checkbox" class="cbsent" id="cbs' +
+                      sent_id + '" value="' + sent_id +'">' +
+                      '<label for="cbs' + sent_id + '">' + sent +
+                      '</label><br>')
                         .hide()
                         .appendTo(me.sentencecontainer)
                         .show('slow');
@@ -51,6 +52,25 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                 // activate key bindings
                 ui_disabled = 0;
             }
+        });
+
+        $('input.cbsent').live('click', function() {
+            var sent_id = $(this).val();
+            me.sentences.add_annotation(sent_id,
+                                        me.player.frame,
+                                        this.checked);
+        });
+
+        this.update_checkboxes = function() {
+            var frame = me.player.frame;
+            for (var idx in me.sentences.data) {
+                var val = me.sentences.get_value(idx, frame);
+                $('#cbs' + idx).attr('checked', val);
+            }
+        }
+
+        this.player.onupdate.push(function() {
+            me.update_checkboxes();
         });
     }
 
@@ -69,6 +89,31 @@ function SentenceCollection(player, job) {
             annotations: []
         });
         return me.data.length - 1;
+    }
+
+    this.add_annotation = function(idx, frame, value) {
+        var annotations = me.data[idx]['annotations'];
+        for (var i in annotations) {
+            var f = annotations[i][0];
+            if (f >= frame) {
+                annotations.splice(i);
+                break;
+            }
+        }
+        annotations.push([frame, value]);
+    }
+
+    this.get_value = function(idx, frame) {
+        var val = false;
+        var annotations = me.data[idx]['annotations'];
+        for (var i in annotations) {
+            var f = annotations[i][0];
+            if (f > frame) {
+                break;
+            }
+            val = annotations[i][1];
+        }
+        return val;
     }
 
     this.serialize = function() {
