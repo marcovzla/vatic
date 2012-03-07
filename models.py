@@ -358,3 +358,28 @@ class PredicateAnnotation(turkic.database.Base):
 
     def __str__(self):
         return '{0}:{1}'.format(self.predicateinstance, self.role)
+
+class Sentence(turkic.database.Base):
+    __tablename__ = 'sentences'
+
+    id = Column(Integer, primary_key=True)
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('sentences',
+                                            cascade='all,delete'))
+    text = Column(Text)
+
+    def __str(self):
+        return '<{}: {}>'.format(self.job, self.text)
+
+class SentenceAnnotation(turkic.database.Base):
+    __tablename__ = 'sentence_annotations'
+
+    id = Column(Integer, primary_key=True)
+    sentenceid = Column(Integer, ForeignKey(Sentence.id))
+    sentence = relationship(Sentence, backref=backref('annotations',
+                                                      cascade='all,delete'))
+    frame = Column(Integer)
+    value = Column(Boolean, default=False)
+
+    def __str__(self):
+        return '<{}: {} {}>'.format(self.sentence, self.frame, self.value)
