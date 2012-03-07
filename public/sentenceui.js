@@ -31,6 +31,15 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                         return;
                     }
 
+                    var sent_id = me.sentences.add_sentence(sent);
+
+                    $('<input type="checkbox" id="s' + sent_id + '" value="' + 
+                      sent_id +'">' + '<label for="s' + sent_id + '">' +
+                      sent + '</label><br>')
+                        .hide()
+                        .appendTo(me.sentencecontainer)
+                        .show('slow');
+
                     $(this).dialog('close');
                 },
                 cancel: function() {
@@ -53,6 +62,14 @@ function SentenceCollection(player, job) {
     this.player = player;
     this.job = job;
     this.data = [];
+
+    this.add_sentence = function(sentence) {
+        me.data.push({
+            sentence: sentence,
+            annotations: []
+        });
+        return me.data.length - 1;
+    }
 
     this.serialize = function() {
         return JSON.stringify(me.data);
