@@ -25,6 +25,12 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
             width: 450,
             buttons: {
                 ok: function() {
+                    var sent = $('#sentence_input').val();
+                    if (!sent) {
+                        alert('please write a sentence');
+                        return;
+                    }
+
                     $(this).dialog('close');
                 },
                 cancel: function() {
@@ -32,6 +38,7 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                 }
             },
             close: function() {
+                $('#sentence_input').val('');
                 // activate key bindings
                 ui_disabled = 0;
             }
