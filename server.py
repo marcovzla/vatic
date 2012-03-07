@@ -145,6 +145,20 @@ def readpredicates(predicates, paths):
         predicateInstances.append(pi)
         
     return predicateInstances
+
+def readsentences(sentences):
+    sentence_instances = []
+    logger.debug('Reading {} total sentence instances'.format(len(sentences)))
+    for sd in sentences:
+        s = Sentence()
+        s.text = sd['sentence']
+        for f,v in sd['annotations']:
+            sa = SentenceAnnotation()
+            sa.sentence = s
+            sa.frame = f
+            sa.value = v
+        sentence_instances.append(s)
+    return sentence_instances
     
 @handler(post = "json")
 def savejob(id, data):
@@ -156,6 +170,10 @@ def savejob(id, data):
         for pa in pi.predicate_annotations:
             session.delete(pa)
         session.delete(pi)
+    for s in job.sentences:
+        for sa in s.annotations:
+            session.delete(sa)
+        session.delete(s)
     session.commit()
     
     paths = readpaths(data["tracks"])
@@ -163,6 +181,8 @@ def savejob(id, data):
         job.paths.append(path)
     for pi in readpredicates(data["predicates"], paths):
         job.predicate_instances.append(pi)
+    for s in readsentences(data['sentences']):
+        job.sentences.append(s)
     
     session.add(job)
     session.commit()

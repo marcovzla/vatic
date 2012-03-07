@@ -15,7 +15,7 @@ function ui_build(job)
 
     ui_setupbuttons(job, player, tracks);
     ui_setupslider(player);
-    ui_setupsubmit(job, tracks, predicates);
+    ui_setupsubmit(job, tracks, predicates, sentences);
     ui_setupclickskip(job, player, tracks, objectui);
     ui_setupkeyboardshortcuts(job, player);
     ui_loadprevious(job, objectui);
@@ -455,7 +455,7 @@ function ui_loadprevious(job, objectui)
 
 }
 
-function ui_setupsubmit(job, tracks, predicates)
+function ui_setupsubmit(job, tracks, predicates, sentences)
 {
     $("#submitbutton").button({
         icons: {
@@ -463,18 +463,20 @@ function ui_setupsubmit(job, tracks, predicates)
         }
     }).click(function() {
         if (ui_disabled) return;
-        ui_submit(job, tracks, predicates);
+        ui_submit(job, tracks, predicates, sentences);
     });
 }
 
-function serialize_all(tracks, predicates) {
-    return '{"tracks":' + tracks.serialize() + ',"predicates":' + predicates.serialize() + "}";
+function serialize_all(tracks, predicates, sentences) {
+    return '{"tracks":' + tracks.serialize() + 
+             ',"predicates":' + predicates.serialize() +
+             ',"sentences":' + sentences.serialize() + '}';
 }
 
-function ui_submit(job, tracks, predicates)
+function ui_submit(job, tracks, predicates, sentences)
 {
     console.dir(tracks);
-    console.log("Start submit - status: " + serialize_all(tracks, predicates));
+    console.log("Start submit - status: " + serialize_all(tracks, predicates, sentences));
 
     if (!mturk_submitallowed())
     {
@@ -501,7 +503,7 @@ function ui_submit(job, tracks, predicates)
 
     function validatejob(callback)
     {
-        server_post("validatejob", [job.jobid], serialize_all(tracks, predicates),
+        server_post("validatejob", [job.jobid], serialize_all(tracks, predicates, sentences),
             function(valid) {
                 if (valid)
                 {
@@ -529,7 +531,7 @@ function ui_submit(job, tracks, predicates)
     function savejob(callback)
     {
         server_post("savejob", [job.jobid],
-            serialize_all(tracks, predicates), function(data) {
+            serialize_all(tracks, predicates, sentences), function(data) {
                 callback()
             });
     }
