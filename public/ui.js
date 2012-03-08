@@ -71,7 +71,7 @@ function ui_setup(job)
     $('#sentencesidebar').css({'height': job.height + 'px',
                                'width': '205px'});
 
-    $("#annotatescreen").css("width", (playerwidth + 205) + "px");
+    //$("#annotatescreen").css("width", (playerwidth + 205) + "px");
 
     $("#bottombar").append("<div id='playerslider'></div>");
     $("#bottombar").append("<div class='button' id='rewindbutton'>Rewind</div> ");
