@@ -35,16 +35,19 @@ function ui_setup(job)
     $("<table>" + 
         "<tr>" +
             "<td><div id='instructionsbutton' class='button'>Instructions</div><div id='instructions'>Annotate every object, even stationary and obstructed objects, for the entire video.</td>" +
-            "<td><div id='topbar'></div></td>" +
-            "<td><div id='predicatestopbar'></div></td>" +
-            "<td><div id='sentencestopbar'></div></td>" +
+               "<td rowspan='2'>" +
+              '<div id="accordion">' +
+                '<h3><a href="#">tracks</a></h3>' +
+                "<div id='sidebar'><div id='topbar'></div></div>" +
+                '<h3><a href="#">predicates</a></h3>' +
+                "<div id='predicatesidebar'><div id='predicatestopbar'></div></div>" +
+                '<h3><a href="#">sentences</a></h3>' +
+                "<div id='sentencesidebar'><div id='sentencestopbar'></div></div>" +
+              '</div></td>' +
         "</tr>" +
         "<tr>" +
               "<td><div id='videoframe'></div></td>" + 
-              "<td rowspan='2'><div id='sidebar'></div></td>" +
-              "<td rowspan='2'><div id='predicatesidebar'></div></td>" +
-              "<td rowspan='2'><div id='sentencesidebar'></div></td>" +
-          "</tr>" + 
+         "</tr>" + 
           "<tr>" +
               "<td><div id='bottombar'></div></td>" + 
           "</tr>" +
@@ -57,21 +60,21 @@ function ui_setup(job)
 
     var playerwidth = Math.max(720, job.width);
 
+    $('#accordion').accordion().css({height:job.height*3/4 + 'px',
+                                     width: '350px'});
+
 
     $("#videoframe").css({"width": job.width + "px",
                           "height": job.height + "px",
                           "margin": "0 auto"})
                     .parent().css("width", playerwidth + "px");
 
-    $("#sidebar").css({"height": job.height + "px",
-                       "width": "205px"});
+    $("#sidebar").css({"height": job.height*3/4 + "px"});
                        
-    $("#predicatesidebar").css({"height": job.height + "px",
-                                "width": "205px"});
-    $('#sentencesidebar').css({'height': job.height + 'px',
-                               'width': '205px'});
+    $("#predicatesidebar").css({"height": job.height*3/4 + "px"});
+    $('#sentencesidebar').css({'height': job.height*3/4 + 'px'});
 
-    //$("#annotatescreen").css("width", (playerwidth + 205) + "px");
+    $("#annotatescreen").css("width", (playerwidth + 205) + "px");
 
     $("#bottombar").append("<div id='playerslider'></div>");
     $("#bottombar").append("<div class='button' id='rewindbutton'>Rewind</div> ");
