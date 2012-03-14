@@ -36,7 +36,9 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                     $('<input type="checkbox" class="cbsent" id="cbs' +
                       sent_id + '" value="' + sent_id +'">' +
                       '<label for="cbs' + sent_id + '">' + sent +
-                      '</label><br>')
+                      '</label>' +
+                      '<div style="float:right"><div class="ui-icon ui-icon-trash delsent" id="sent' +
+                      sent_id + '" title="delete this sentence"></div></div><br>')
                         .hide()
                         .appendTo(me.sentencecontainer)
                         .show('slow');
@@ -52,6 +54,13 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                 // activate key bindings
                 ui_disabled = 0;
             }
+        });
+
+        $('.delsent').live('click', function () {
+            var sent_id = $(this).attr('id');
+            me.sentences.del_sentence(sent_id.substring(4));
+            me.sentencecontainer.empty();
+            me.draw_my_data();
         });
 
         $('input.cbsent').live('click', function() {
@@ -84,13 +93,16 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
 
         this.draw_my_data = function() {
             for (var i in me.sentences.data) {
-                 $('<input type="checkbox" class="cbsent" id="cbs' +
-                   i + '" value="' + i +'">' + '<label for="cbs' + i +
-                   '">' + me.sentences.data[i]['sentence'] +
-                   '</label><br>')
-                        .hide()
-                        .appendTo(me.sentencecontainer)
-                        .show('slow');
+                if (!me.sentences.data[i]) {
+                    continue;
+                }
+                $('<input type="checkbox" class="cbsent" id="cbs' +
+                  i + '" value="' + i +'">' + '<label for="cbs' + i +
+                  '">' + me.sentences.data[i]['sentence'] +
+                  '</label>' +
+                  '<div style="float:right"><div class="ui-icon ui-icon-trash delsent" id="sent' +
+                  i + '" title="delete this sentence"></div></div><br>')
+                    .appendTo(me.sentencecontainer);
             }
             me.update_checkboxes();
         }
@@ -112,7 +124,11 @@ function SentenceCollection(player, job) {
             annotations: []
         });
         return me.data.length - 1;
-    }
+    };
+
+    this.del_sentence = function (idx) {
+        delete me.data[idx];
+    };
 
     this.add_annotation = function(idx, frame, value) {
         var annotations = me.data[idx]['annotations'];
@@ -124,7 +140,7 @@ function SentenceCollection(player, job) {
             }
         }
         annotations.push([frame, value]);
-    }
+    };
 
     this.get_value = function(idx, frame) {
         var val = false;
@@ -137,9 +153,15 @@ function SentenceCollection(player, job) {
             val = annotations[i][1];
         }
         return val;
-    }
+    };
 
     this.serialize = function() {
-        return JSON.stringify(me.data);
-    }
+        var data = [];
+        for (var i in me.data) {
+            if (me.data[i]) {
+                data.push(me.data[i]);
+            }
+        }
+        return JSON.stringify(data);
+    };
 }
