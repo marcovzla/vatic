@@ -8,12 +8,14 @@ function ui_build(job)
     var player = new VideoPlayer(videoframe, job);
     var tracks = new TrackCollection(player, job);
     var predicates = new PredicateCollection(player, job);
+    var sentences = new SentenceCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
     predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
+    var sentenceui = new SentenceUI($('#newsentencebutton'), $('#newsentencedialog'), $('#sentencecontainer'), job, player, sentences);
 
     ui_setupbuttons(job, player, tracks);
     ui_setupslider(player);
-    ui_setupsubmit(job, tracks, predicates);
+    ui_setupsubmit(job, tracks, predicates, sentences);
     ui_setupclickskip(job, player, tracks, objectui);
     ui_setupkeyboardshortcuts(job, player);
     ui_loadprevious(job, objectui);
@@ -33,14 +35,19 @@ function ui_setup(job)
     $("<table>" + 
         "<tr>" +
             "<td><div id='instructionsbutton' class='button'>Instructions</div><div id='instructions'>Annotate every object, even stationary and obstructed objects, for the entire video.</td>" +
-            "<td><div id='topbar'></div></td>" +
-            "<td><div id='predicatestopbar'></div></td>" +
+               "<td rowspan='2'>" +
+              '<div id="accordion">' +
+                '<h3><a href="#">tracks</a></h3>' +
+                "<div id='sidebar'><div id='topbar'></div></div>" +
+                '<h3><a href="#">predicates</a></h3>' +
+                "<div id='predicatesidebar'><div id='predicatestopbar'></div></div>" +
+                '<h3><a href="#">sentences</a></h3>' +
+                "<div id='sentencesidebar'><div id='sentencestopbar'></div></div>" +
+              '</div></td>' +
         "</tr>" +
         "<tr>" +
               "<td><div id='videoframe'></div></td>" + 
-              "<td rowspan='2'><div id='sidebar'></div></td>" +
-              "<td rowspan='2'><div id='predicatesidebar'></div></td>" +
-          "</tr>" + 
+         "</tr>" + 
           "<tr>" +
               "<td><div id='bottombar'></div></td>" + 
           "</tr>" +
@@ -53,17 +60,19 @@ function ui_setup(job)
 
     var playerwidth = Math.max(720, job.width);
 
+    $('#accordion').accordion().css({height:job.height*3/4 + 'px',
+                                     width: '350px'});
+
 
     $("#videoframe").css({"width": job.width + "px",
                           "height": job.height + "px",
                           "margin": "0 auto"})
                     .parent().css("width", playerwidth + "px");
 
-    $("#sidebar").css({"height": job.height + "px",
-                       "width": "205px"});
+    $("#sidebar").css({"height": job.height*3/4 + "px"});
                        
-    $("#predicatesidebar").css({"height": job.height + "px",
-                                "width": "205px"});
+    $("#predicatesidebar").css({"height": job.height*3/4 + "px"});
+    $('#sentencesidebar').css({'height': job.height*3/4 + 'px'});
 
     $("#annotatescreen").css("width", (playerwidth + 205) + "px");
 
@@ -76,9 +85,12 @@ function ui_setup(job)
         
     $("#predicatestopbar").append("<div id='newpredicatecontainer'>" +
         "<div class='button' id='newpredicatebutton'>New Predicate</div></div>");
+    $('#sentencestopbar').append('<div id="newsentencecontainer">' +
+            '<div class="button" id="newsentencebutton">New Sentence</div></div>');
 
     $("<div id='objectcontainer'></div>").appendTo("#sidebar");
     $("<div id='predicatecontainer'></div>").appendTo("#predicatesidebar");
+    $('<div id="sentencecontainer"></div>').appendTo('#sentencesidebar');
 
     $("<div class='button' id='openadvancedoptions'>Options</div>")
         .button({
@@ -441,12 +453,13 @@ function ui_loadprevious(job, objectui)
                                      data[i]["attributes"]);
         }
 
+        objectui.showkeyframes();
         predicateui.draw_data();
     });
 
 }
 
-function ui_setupsubmit(job, tracks, predicates)
+function ui_setupsubmit(job, tracks, predicates, sentences)
 {
     $("#submitbutton").button({
         icons: {
@@ -454,18 +467,20 @@ function ui_setupsubmit(job, tracks, predicates)
         }
     }).click(function() {
         if (ui_disabled) return;
-        ui_submit(job, tracks, predicates);
+        ui_submit(job, tracks, predicates, sentences);
     });
 }
 
-function serialize_all(tracks, predicates) {
-    return '{"tracks":' + tracks.serialize() + ',"predicates":' + predicates.serialize() + "}";
+function serialize_all(tracks, predicates, sentences) {
+    return '{"tracks":' + tracks.serialize() + 
+             ',"predicates":' + predicates.serialize() +
+             ',"sentences":' + sentences.serialize() + '}';
 }
 
-function ui_submit(job, tracks, predicates)
+function ui_submit(job, tracks, predicates, sentences)
 {
     console.dir(tracks);
-    console.log("Start submit - status: " + serialize_all(tracks, predicates));
+    console.log("Start submit - status: " + serialize_all(tracks, predicates, sentences));
 
     if (!mturk_submitallowed())
     {
@@ -492,7 +507,7 @@ function ui_submit(job, tracks, predicates)
 
     function validatejob(callback)
     {
-        server_post("validatejob", [job.jobid], serialize_all(tracks, predicates),
+        server_post("validatejob", [job.jobid], serialize_all(tracks, predicates, sentences),
             function(valid) {
                 if (valid)
                 {
@@ -520,7 +535,7 @@ function ui_submit(job, tracks, predicates)
     function savejob(callback)
     {
         server_post("savejob", [job.jobid],
-            serialize_all(tracks, predicates), function(data) {
+            serialize_all(tracks, predicates, sentences), function(data) {
                 callback()
             });
     }
