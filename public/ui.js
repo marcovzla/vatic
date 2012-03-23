@@ -453,6 +453,7 @@ function ui_loadprevious(job, objectui)
                                      data[i]["attributes"]);
         }
 
+        objectui.showkeyframes();
         predicateui.draw_data();
     });
 
