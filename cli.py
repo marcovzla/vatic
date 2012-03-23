@@ -669,15 +669,13 @@ class dump(DumpCommand):
                 file.write(" ybr=\"{0}\"".format(box.ybr))
                 file.write(" outside=\"{0}\"".format(box.lost))
                 file.write(" occluded=\"{0}\">".format(box.occluded))
-                if (len(box.attributes) > 0):
-                    file.write("\n")
                 for attr in box.attributes:
                     if (type(attr) == PredicateAnnotation):
-                        file.write("\t\t\t<predicate id=\"{0}\" role =\"{2}\">{1}</predicate>"
+                        file.write("\n\t\t\t<predicate id=\"{0}\" role =\"{2}\">{1}</predicate>"
                                .format(attr.predicateinstanceid, attr.predicateinstance.predicate.text,
                                        attr.role.text))
                     else:
-                        file.write("\t\t\t<attribute id=\"{0}\">{1}</attribute>".format(
+                        file.write("\n\t\t\t<attribute id=\"{0}\">{1}</attribute>".format(
                                 attr.id, attr.text))
                 if (len(box.attributes) > 0):
                     file.write("\n")
