@@ -190,6 +190,22 @@ function TrackObjectUI(button, container, videoframe, job, player, tracks)
     {
         return this.availcolors[this.availcolors.push(this.availcolors.shift()) - 1];
     }
+
+    this.player.onupdate.push(function () {
+        me.showkeyframes();
+    });
+
+    this.showkeyframes = function () {
+        for (var i in me.tracks.tracks) {
+            var annotations = me.tracks.tracks[i].journal.annotations;
+            if (me.player.frame in annotations) {
+                $('#trackobject' + i + 'keyframe').show();
+            }
+            else {
+                $('#trackobject' + i + 'keyframe').hide();
+            }
+        }
+    };
 }
 
 function TrackObject(job, player, container, color)
@@ -481,6 +497,7 @@ function TrackObject(job, player, container, color)
         this.headerdetails.append("<div style='float:right;'><div class='ui-icon ui-icon-trash' id='trackobject" + this.id + "delete' title='Delete this track'></div></div>");
         this.headerdetails.append("<div style='float:right;'><div class='ui-icon ui-icon-unlocked' id='trackobject" + this.id + "lock' title='Lock/unlock to prevent modifications'></div></div>");
         this.headerdetails.append("<div style='float:right;'><div class='ui-icon ui-icon-image' id='trackobject" + this.id + "tooltip' title='Show preview of track'></div></div>");
+        this.headerdetails.append("<div style='float:right'><div style='display:none' class='ui-icon ui-icon-key' id='trackobject" + this.id + "keyframe' title='keyframe'></div></div>");
 
         $("#trackobject" + this.id + "delete").click(function() {
             if (window.confirm("Delete the " + me.job.labels[me.label] + " " + (me.id + 1) + " track? If the object just left the view screen, click the \"Outside of view frame\" check box instead."))
