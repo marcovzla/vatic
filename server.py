@@ -222,3 +222,22 @@ def respawnjob(id):
     session.add(replacement)
     session.commit()
 
+@handler(post='json')
+def savepredicateforjob(id, data):
+    job = session.query(Job).get(id)
+    pred = Predicate()
+    pred.text = data['predicate']
+    job.predicates.append(pred)
+    session.add(job)
+    session.commit()
+    return pred.id
+
+@handler(post='json')
+def saveroleforjob(id, data):
+    job = session.query(Job).get(id)
+    role = Role()
+    role.text = data['role']
+    job.roles.append(role)
+    session.add(job)
+    session.commit()
+    return role.id

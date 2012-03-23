@@ -17,6 +17,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             icons: { primary: "ui-icon-plusthick" },
             disabled: false
         }).click(function() {
+            ui_disabled = 1;
             me.newpreddialog.dialog('open');
         });
         
@@ -26,7 +27,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             autoOpen: false,
             modal: true,
             height: 450,
-            width: 250,
+            width: 350,
             buttons: {
                 ok: function() {
                     // get the selected predicate type
@@ -56,10 +57,15 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 cancel: function() {
                     $(this).dialog('close');
                 }
+            },
+            close: function () {
+                $('#new_pred_txt').val('');
+                ui_disabled = 0;
             }
         });
 
         $('a.addrole').live('click', function(e) {
+            ui_disabled = 1;
             e.preventDefault();
             $('#available_tracks').empty();
             for (var i in me.tracks.tracks) {
@@ -83,6 +89,8 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             width: 400,
             close: function() {
                 $('#selrole option:eq(0)').attr('selected', true);
+                $('#new_role_txt').val('');
+                ui_disabled = 0;
             },
             buttons: {
                 ok: function() {
@@ -141,7 +149,30 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 }
             }
         }
-        
+
+        // add predicate to database
+        me.newpreddialog.append('<input type="text" name="new_pred_txt" id="new_pred_txt">' +
+                                '<button id="add_new_pred">add</button><hr>');
+        $('#add_new_pred').click(function () {
+            var predtxt = $('#new_pred_txt').val();
+            if (!predtxt) {
+                alert('please write a predicate name');
+                return;
+            }
+            $.post('/server/savepredicateforjob/' + me.job.jobid,
+                   JSON.stringify({predicate: predtxt}),
+                   function (data) {
+                       me.predname[data] = predtxt;
+                       $('<input type="radio" name="predicates" id="p' + data +
+                         '" value="' + data + '"><label for="p' + data + '">' +
+                         me.predname[data] + '</label><br>')
+                            .hide()
+                            .appendTo(me.newpreddialog)
+                            .show('slow');
+                   }
+            );
+        });
+
         me.predname = job.predicates;
         for (var p in me.predname) {
             me.newpreddialog.append('<input type="radio" name="predicates" id="p' +
@@ -156,7 +187,25 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         }
         me.newroledialog.append('<label>role:</label>');
         me.newroledialog.append(select);
+        me.newroledialog.append('<br><input type="text" name="new_role_txt" id="new_role_txt">' +
+                                '<button id="add_new_role">add</button>');
         me.newroledialog.append('<hr><div id="available_tracks"></div>');
+
+        $('#add_new_role').click(function () {
+            var roletxt = $('#new_role_txt').val();
+            if (!roletxt) {
+                alert('please write a role name');
+                return;
+            }
+            $.post('/server/saveroleforjob/' + me.job.jobid,
+                   JSON.stringify({role:roletxt}),
+                   function (data) {
+                       me.rolename[data] = roletxt;
+                       $('<option value="' + data + '">' + me.rolename[data] + '</option>')
+                            .appendTo('#selrole');
+                   }
+            );
+        });
     }
 
     this.remove_track = function(track_id) {

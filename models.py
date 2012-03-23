@@ -303,6 +303,9 @@ class Role(turkic.database.Base):
 
     id = Column(Integer, primary_key = True)
     text = Column(String(250), unique = True)
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('roles',
+                                            cascade='all,delete'))
     
     def __str__(self):
         return self.text
@@ -312,6 +315,9 @@ class Predicate(turkic.database.Base):
 
     id = Column(Integer, primary_key = True)
     text = Column(String(250), unique = True)
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('predicates',
+                                            cascade='all,delete'))
     
     def __str__(self):
         return self.text
