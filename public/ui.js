@@ -41,7 +41,7 @@ function ui_setup(job)
                 "<div id='sidebar'><div id='topbar'></div></div>" +
                 '<h3><a href="#">predicates</a></h3>' +
                 "<div id='predicatesidebar'><div id='predicatestopbar'></div></div>" +
-                '<h3><a href="#">sentences</a></h3>' +
+                '<h3 class="ui-state-disabled"><a href="#">sentences</a></h3>' +
                 "<div id='sentencesidebar'><div id='sentencestopbar'></div></div>" +
               '</div></td>' +
         "</tr>" +
@@ -63,6 +63,15 @@ function ui_setup(job)
     $('#accordion').accordion().css({height:job.height*3/4 + 'px',
                                      width: '350px'});
 
+    // disable accordion panels with class ui-state-disabled
+    var accordion = $('#accordion').data('accordion');
+    accordion._std_clickHandler = accordion._clickHandler;
+    accordion._clickHandler = function (event, target) {
+        var clicked = $(event.currentTarget || target);
+        if (!clicked.hasClass('ui-state-disabled')) {
+            this._std_clickHandler(event, target);
+        }
+    };
 
     $("#videoframe").css({"width": job.width + "px",
                           "height": job.height + "px",
