@@ -446,3 +446,7 @@ code
     height : 100%;
 }
 
+.ui-effects-transfer {
+    border: 2px solid black;
+    z-index: 1000000000;
+}

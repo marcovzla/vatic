@@ -160,7 +160,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 return;
             }
             $.post('/server/savepredicateforjob/' + me.job.jobid,
-                   JSON.stringify({predicate: predtxt}),
+                   JSON.stringify({predicate:predtxt}),
                    function (data) {
                        me.predname[data] = predtxt;
                        $('<input type="radio" name="predicates" id="p' + data +
@@ -169,6 +169,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                             .hide()
                             .appendTo(me.newpreddialog)
                             .show('slow');
+                        $('#new_pred_txt').val('');
                    }
             );
         });
@@ -201,8 +202,15 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                    JSON.stringify({role:roletxt}),
                    function (data) {
                        me.rolename[data] = roletxt;
-                       $('<option value="' + data + '">' + me.rolename[data] + '</option>')
+                       $('<option value="' + data + '">' +
+                         me.rolename[data] + '</option>')
                             .appendTo('#selrole');
+                       $('#new_role_txt')
+                           .val('')
+                           .effect('transfer', {
+                               to: '#selrole',
+                               className: 'ui-effects-transfer'
+                           }, 500);
                    }
             );
         });
