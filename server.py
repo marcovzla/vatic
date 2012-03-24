@@ -32,8 +32,8 @@ def getjob(id, verified):
     for label in video.labels:
         attributes[label.id] = dict((a.id, a.text) for a in label.attributes)
 
-    roles = dict((r.id, r.text) for r in session.query(Role))
-    predicates = dict((p.id, p.text) for p in session.query(Predicate))
+    roles = dict((r.id, r.text) for r in job.roles)
+    predicates = dict((p.id, p.text) for p in job.predicates)
 
     logger.debug("Giving user frames {1} to {2} of {0}".format(video.slug,
                                                                segment.start,

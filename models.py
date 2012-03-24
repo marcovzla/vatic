@@ -301,8 +301,8 @@ class CompletionBonus(turkic.models.BonusSchedule):
 class Role(turkic.database.Base):
     __tablename__ = "roles"
 
-    id = Column(Integer, primary_key = True)
-    text = Column(String(250), unique = True)
+    id = Column(Integer, primary_key=True)
+    text = Column(String(250))
     jobid = Column(Integer, ForeignKey(Job.id))
     job = relationship(Job, backref=backref('roles',
                                             cascade='all,delete'))
@@ -313,8 +313,8 @@ class Role(turkic.database.Base):
 class Predicate(turkic.database.Base):
     __tablename__ = "predicates"
 
-    id = Column(Integer, primary_key = True)
-    text = Column(String(250), unique = True)
+    id = Column(Integer, primary_key=True)
+    text = Column(String(250))
     jobid = Column(Integer, ForeignKey(Job.id))
     job = relationship(Job, backref=backref('predicates',
                                             cascade='all,delete'))
