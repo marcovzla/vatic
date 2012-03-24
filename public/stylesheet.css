@@ -181,7 +181,7 @@ code
 
 #objectcontainer
 {
-    overflow : auto;
+    /*overflow : auto;*/
     height : 100%;
 }
 
@@ -442,7 +442,7 @@ code
 
 #predicatecontainer
 {
-    overflow : auto;
+    /*overflow : auto;*/
     height : 100%;
 }
 
