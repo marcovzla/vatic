@@ -102,6 +102,10 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                     }
 
                     var role_id = $('#selrole option:selected').val();
+                    if (!role_id) {
+                        alert('please add a role');
+                        return;
+                    }
 
                     var predinstance_id = $(this).data('link')
                                                  .parent()
