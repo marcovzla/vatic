@@ -21,8 +21,8 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
             title: 'new sentence',
             autoOpen: false,
             modal: true,
-            height: 250,
-            width: 450,
+            height: 200,
+            width: 700,
             buttons: {
                 ok: function() {
                     var sent = $('#sentence_input').val();
