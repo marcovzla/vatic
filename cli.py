@@ -1073,7 +1073,7 @@ class readtracks(Command):
                 for l in video.labels:
                     if l.text == cols[9]:
                         label = l
-                        continue
+                        break
                 if not label:
                     label = Label()
                     label.text = cols[9]
