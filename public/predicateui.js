@@ -45,8 +45,11 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 
                     $('<div class="predblock"><div style="float:left">' + 
                       newpredname + ' ' + newprednum +
-                      '</div><div style="float:right"><a class="addrole" href="#">add track</a></div>' + 
-                      '<input type="hidden" class="predinstance_id" value="' + pred_instance + '"><br></div>')
+                      '</div><div style="float:right">' +
+                      '<div class="ui-icon ui-icon-plusthick addrole"' +
+                      ' title="add track"></div></div>' +
+                      '<input type="hidden" class="predinstance_id" value="' +
+                      pred_instance + '"><br></div>')
                         .hide()
                         .prependTo(me.predcontainer)
                         .show('slow');
@@ -64,17 +67,18 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             }
         });
 
-        $('a.addrole').live('click', function(e) {
+        $('.addrole').live('click', function(e) {
             ui_disabled = 1;
-            e.preventDefault();
+            //e.preventDefault();
             $('#available_tracks').empty();
             for (var i in me.tracks.tracks) {
                 if (me.tracks.tracks[i].deleted) {
                     continue;
                 }
-                $('#available_tracks').append('<input type="radio" name="avtracks" id="t' + i +
-                                              '" value="' + i + '"><label for="t' + i + '">' +
-                                              me.track_name(i) + '</label><br>');
+                $('#available_tracks').append(
+                    '<input type="radio" name="avtracks" id="t' + i +
+                    '" value="' + i + '"><label for="t' + i + '">' +
+                    me.track_name(i) + '</label><br>');
             }
             me.newroledialog
                 .data('link', $(this))
@@ -275,8 +279,11 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             var pred_instance = i;
             var pred = $('<div class="predblock"><div style="float:left">' +
                          newpredname + ' ' + newprednum +
-                         '</div><div style="float:right"><a class="addrole" href="#">add track</a></div>' + 
-                         '<input type="hidden" class="predinstance_id" value="' + pred_instance + '"><br></div>')
+                         '</div><div style="float:right">' +
+                         '<div class="ui-icon ui-icon-plusthick addrole"' +
+                         ' title="add track"></div></div>' +
+                         '<input type="hidden" class="predinstance_id" ' +
+                         'value="' + pred_instance + '"><br></div>')
                            .prependTo(me.predcontainer);
 
             for (var j in me.predicates.data[i]['annotations']) {
