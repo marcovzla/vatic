@@ -36,17 +36,23 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                         return;
                     }
 
+                    var pred_instance = me.predicates.new_predicate(pred_id);
+
                     // add new predicate to the list
-                    var newprednum = me.predcontainer.children().length + 1;
+                    var newprednum = pred_instance + 1;
                     var newpredname = me.predname[pred_id];
 
-                    var pred_instance = me.predicates.new_predicate(pred_id);
 
                     $('<div class="predblock"><div style="float:left">' + 
                       newpredname + ' ' + newprednum +
                       '</div><div style="float:right">' +
+                     '<div style="float:right">' +
+                      '<div class="ui-icon ui-icon-trash delpredins"' +
+                      ' title="delete predicate"></div></div>' +
+                      '<div style="float:right">' +
                       '<div class="ui-icon ui-icon-plusthick addrole"' +
                       ' title="add track"></div></div>' +
+                      '</div>' +
                       '<input type="hidden" class="predinstance_id" value="' +
                       pred_instance + '"><br></div>')
                         .hide()
@@ -102,6 +108,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 
                     var predinstance_id = $(this).data('link')
                                                  .parent()
+                                                 .parent()
                                                  .siblings('.predinstance_id')
                                                  .val();
 
@@ -122,7 +129,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                       'id="predarg_' + predinstance_id + '_' + track_id +
                       '" title="delete this track"></div></div><br>')
                         .hide()
-                        .appendTo($(this).data('link').parent().parent())
+                        .appendTo($(this).data('link').parent().parent().parent())
                         .show('slow');
                     // tracks should be added checked by default
                     $('#cbp' + predinstance_id + '_' + track_id)
@@ -153,6 +160,14 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             me.remove_track_for_pred(track_id, pred_id);
         });
 
+        $('.delpredins').live('click', function () {
+            var pred_id = $(this).parent().parent()
+                                 .siblings('.predinstance_id')
+                                 .val();
+            me.remove_predicate(pred_id);
+
+        });
+
         this.player.onupdate.push(function() {
             me.update_checkboxes();
         });
@@ -160,6 +175,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         this.update_checkboxes = function() {
             var frame = me.player.frame;
             for (var idx in me.predicates.data) {
+                if (!me.predicates.data[idx]) continue;
                 for (var track_id in me.predicates.data[idx]['annotations']) {
                     var val = me.predicates.getval(idx, track_id, frame);
                     $('#cbp' + idx + '_' + track_id).attr('checked', val);
@@ -196,6 +212,12 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         me.draw_my_data();
     };
 
+    this.remove_predicate = function (pred_id) {
+        me.predicates.remove_predicate(pred_id);
+        me.predcontainer.empty();
+        me.draw_my_data();
+    };
+
     this.track_name = function(track_id) {
         track_id = parseInt(track_id);
         if (me.tracks.tracks[track_id].deleted) {
@@ -214,14 +236,19 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
 
     this.draw_my_data = function() {
         for (var i in me.predicates.data) {
+            if (!me.predicates.data[i]) continue;
             var newprednum = parseInt(i) + 1;
             var newpredname = me.predname[me.predicates.data[i]['predicate']];
             var pred_instance = i;
             var pred = $('<div class="predblock"><div style="float:left">' +
                          newpredname + ' ' + newprednum +
                          '</div><div style="float:right">' +
+                         '<div style="float:right">' +
+                         '<div class="ui-icon ui-icon-trash delpredins"' +
+                         ' title="delete predicate"></div></div>' +
+                         '<div style="float:right">' +
                          '<div class="ui-icon ui-icon-plusthick addrole"' +
-                         ' title="add track"></div></div>' +
+                         ' title="add track"></div></div></div>' +
                          '<input type="hidden" class="predinstance_id" ' +
                          'value="' + pred_instance + '"><br></div>')
                            .prependTo(me.predcontainer);
@@ -272,6 +299,11 @@ function PredicateCollection(player, job) {
         });
         return idx;
     }
+
+    this.remove_predicate = function (idx) {
+        me.data[idx] = null;
+    };
+
 
     this.add_track = function(idx, track_id) {
         if (track_id in me.data[idx]['annotations']) {
@@ -325,6 +357,7 @@ function PredicateCollection(player, job) {
         var data = [];
         for (var pred_id in me.data) {
             var pred = me.data[pred_id];
+            if (!pred) continue;
             var pred2 = {};
             pred2['predicate'] = pred['predicate'];
             pred2['annotations'] = {};
