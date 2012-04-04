@@ -100,20 +100,29 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                                                  .siblings('.predinstance_id')
                                                  .val();
 
-                    var added = me.predicates.add_track(predinstance_id, track_id);
+                    var added = me.predicates.add_track(predinstance_id,
+                                                        track_id);
                     if (!added) {
                         alert('track is already in predicate');
                         return;
                     }
-                    $('<input type="checkbox" class="cbtrack" id="cbp' + predinstance_id + '_' + track_id +
+                    $('<input type="checkbox" class="cbtrack" id="cbp' +
+                      predinstance_id + '_' + track_id +
                       '" value="' + track_id + '_' + role_id + '">' + 
-                      '<label for="cbp' + predinstance_id + '_' + track_id  + '">' + me.track_name(track_id) +
-                      ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
+                      '<label for="cbp' + predinstance_id + '_' + track_id +
+                      '">' + me.track_name(track_id) + ' <small>(' + 
+                      me.rolename[role_id] + ')</small></label>' +
+                      '<div style="float:right">' +
+                      '<div class="ui-icon ui-icon-trash delpredarg" ' +
+                      'id="predarg_' + predinstance_id + '_' + track_id +
+                      '" title="delete this track"></div></div><br>')
                         .hide()
                         .appendTo($(this).data('link').parent().parent())
                         .show('slow');
                     // tracks should be added checked by default
-                    $('#cbp' + predinstance_id + '_' + track_id).attr('checked', true).click();
+                    $('#cbp' + predinstance_id + '_' + track_id)
+                        .attr('checked', true)
+                        .click();
                     $(this).dialog('close');
                 },
                 cancel: function() {
@@ -125,7 +134,18 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         $('input.cbtrack').live('click', function() {
             var predinstance_id = $(this).siblings('.predinstance_id').val();
             var trackrole = $(this).val().split('_');
-            me.predicates.add_annotation(predinstance_id, trackrole[0], me.player.frame, trackrole[1], this.checked);
+            me.predicates.add_annotation(predinstance_id,
+                                         trackrole[0],
+                                         me.player.frame,
+                                         trackrole[1],
+                                         this.checked);
+        });
+
+        $('.delpredarg').live('click', function () {
+            var predtrack = $(this).attr('id').split('_');
+            var pred_id = predtrack[1];
+            var track_id = predtrack[2];
+            me.remove_track_for_pred(track_id, pred_id);
         });
 
         this.player.onupdate.push(function() {
@@ -165,6 +185,12 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         me.draw_my_data();
     }
 
+    this.remove_track_for_pred = function (track_id, pred_id) {
+        me.predicates.remove_track_for_pred(track_id, pred_id);
+        me.predcontainer.empty();
+        me.draw_my_data();
+    };
+
     this.track_name = function(track_id) {
         track_id = parseInt(track_id);
         if (me.tracks.tracks[track_id].deleted) {
@@ -196,10 +222,15 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 var track_id = j;
                 var role_id = me.predicates.data[i]['annotations'][j][0][1]; // XXX not safe
                 var trackname = me.track_name(j);
-                $('<input type="checkbox" class="cbtrack" id="cbp' + pred_instance + '_' + track_id +
+                $('<input type="checkbox" class="cbtrack" id="cbp' +
+                  pred_instance + '_' + track_id +
                   '" value="' + track_id + '_' + role_id + '">' + 
-                  '<label for="cbp' + pred_instance + '_' + track_id  + '">' + trackname +
-                  ' <small>(' + me.rolename[role_id] + ')</small></label><br>')
+                  '<label for="cbp' + pred_instance + '_' + track_id +
+                  '">' + trackname + ' <small>(' + me.rolename[role_id] +
+                  ')</small></label><div style="float:right">' +
+                  '<div class="ui-icon ui-icon-trash delpredarg" ' +
+                  'id="predarg_' + pred_instance + '_' + track_id +
+                  '" title="delete this track"></div></div><br>')
                     .appendTo(pred);
             }
         }
@@ -249,6 +280,12 @@ function PredicateCollection(player, job) {
             }
         }
         me.deleted.push(parseInt(track_id));
+    };
+
+    this.remove_track_for_pred = function (track_id, pred_id) {
+        if (me.data[pred_id]['annotations'].hasOwnProperty(track_id)) {
+            delete me.data[pred_id]['annotations'][track_id];
+        }
     }
 
     this.add_annotation = function(idx, track_id, frame, role_id, value) {
