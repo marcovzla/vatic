@@ -389,3 +389,71 @@ class SentenceAnnotation(turkic.database.Base):
 
     def __str__(self):
         return '<{}: {} {}>'.format(self.sentence, self.frame, self.value)
+
+# added to handle groups and memberships
+class Membership(turkic.database.Base):
+    __tablename__ = "memberships"
+
+    id = Column(Integer, primary_key=True)
+    text = Column(String(250))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('memberships',
+                                            cascade='all,delete'))
+
+    def __str__(self):
+        return self.text
+
+class GroupClass(turkic.database.Base):
+    __tablename__ = "group_classes"
+
+    id = Column(Integer, primary_key=True)
+    text = Column(String(250))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('group_classes',
+                                            cascade='all,delete'))
+
+    def __str__(self):
+        return self.text
+
+class GroupInstance(turkic.database.Base):
+    __tablename__ = "group_instances"
+
+    id = Column(Integer, primary_key=True)
+    groupclassid = Column(Integer, ForeignKey(GroupClass.id))
+    groupclass = relationship(GroupClass, backref=backref("group_instances",
+                                                         cascade="all,delete"))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref("group_instances", cascade="all,delete"))
+
+    def getuniquepaths(self):
+        pathids = []
+        paths = []
+        for ga in self.group_annotations:
+            if ga.pathid in pathids:
+                continue
+            else:
+                pathids.append(ga.pathid)
+                paths.append(ga.path)
+        return paths
+
+    def __str__(self):
+        return '{0}#{1}'.format(self.groupclass, self.id)
+
+class GroupAnnotation(turkic.database.Base):
+    __tablename__ = "group_annotations"
+
+    id = Column(Integer, primary_key=True)
+    groupinstanceid = Column(Integer, ForeignKey(GroupInstance.id))
+    groupinstance = relationship(GroupInstance, backref=backref("group_annotations",
+                                                                cascade="all,delete"))
+    pathid = Column(Integer, ForeignKey(Path.id))
+    path = relationship(Path, backref=backref("group_annotations",
+                                              cascade="all,delete"))
+    membershipid = Column(Integer, ForeignKey(Membership.id))
+    membership = relationship(Membership, backref=backref("group_annotations",
+                                                          cascade="all,delete"))
+    frame = Column(Integer)
+    value = Column(Boolean, default=False)
+
+    def __str__(self):
+        return '{0}:{1}'.format(self.groupinstance, self.role)
