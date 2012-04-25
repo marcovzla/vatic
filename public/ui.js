@@ -7,9 +7,11 @@ function ui_build(job)
     var videoframe = $("#videoframe");
     var player = new VideoPlayer(videoframe, job);
     var tracks = new TrackCollection(player, job);
+    var groups = new GroupCollection(player, job);
     var predicates = new PredicateCollection(player, job);
     var sentences = new SentenceCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
+    var groupui = new GroupUI($('#newgroupbutton'), $('#newgroupdialog'), $('#groupcontainer'), $('#newmembershipdialog'), videoframe, job, player, tracks, groups);
     predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
     var sentenceui = new SentenceUI($('#newsentencebutton'), $('#newsentencedialog'), $('#sentencecontainer'), job, player, sentences);
 
@@ -39,6 +41,8 @@ function ui_setup(job)
               '<div id="accordion">' +
                 '<h3><a href="#">tracks</a></h3>' +
                 "<div id='sidebar'><div id='topbar'></div></div>" +
+                '<h3><a href="#">groups</a></h3>' +
+                '<div id="groupsidebar"><div id="groupstopbar"></div></div>' +
                 '<h3><a href="#">predicates</a></h3>' +
                 "<div id='predicatesidebar'><div id='predicatestopbar'></div></div>" +
                 '<h3><a href="#">sentences</a></h3>' +
@@ -71,6 +75,7 @@ function ui_setup(job)
 
     $("#sidebar").css({"height": job.height*3/4 + "px"});
                        
+    $('#groupsidebar').css({'height': job.height*3/4 + 'px'});
     $("#predicatesidebar").css({"height": job.height*3/4 + "px"});
     $('#sentencesidebar').css({'height': job.height*3/4 + 'px'});
 
@@ -83,12 +88,15 @@ function ui_setup(job)
     $("#topbar").append("<div id='newobjectcontainer'>" +
         "<div class='button' id='newobjectbutton'>New Object</div></div>");
         
+    $('#groupstopbar').append('<div id="newgroupcontainer">' +
+            '<div class="button" id="newgroupbutton">New Group</div></div>');
     $("#predicatestopbar").append("<div id='newpredicatecontainer'>" +
-        "<div class='button' id='newpredicatebutton'>New Predicate</div></div>");
+            "<div class='button' id='newpredicatebutton'>New Predicate</div></div>");
     $('#sentencestopbar').append('<div id="newsentencecontainer">' +
             '<div class="button" id="newsentencebutton">New Sentence</div></div>');
 
     $("<div id='objectcontainer'></div>").appendTo("#sidebar");
+    $('<div id="groupcontainer"></div>').appendTo('#groupsidebar');
     $("<div id='predicatecontainer'></div>").appendTo("#predicatesidebar");
     $('<div id="sentencecontainer"></div>').appendTo('#sentencesidebar');
 
