@@ -430,6 +430,21 @@ code
     z-index : 101;
 }
 
+.groupblock
+{
+    display: block;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ccc #888 #555 #bbb;
+    margin: 0;
+    padding: 2px 3px;
+}
+
+#groupcontainer
+{
+    height: 100%;
+}
+
 .predblock
 {
     display: block;

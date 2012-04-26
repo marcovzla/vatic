@@ -34,6 +34,8 @@ def getjob(id, verified):
 
     roles = dict((r.id, r.text) for r in job.roles)
     predicates = dict((p.id, p.text) for p in job.predicates)
+    memberships = dict((m.id, m.text) for m in job.memberships)
+    groups = dict((g.id, g.text) for g in job.group_classes)
 
     logger.debug("Giving user frames {1} to {2} of {0}".format(video.slug,
                                                                segment.start,
@@ -52,6 +54,8 @@ def getjob(id, verified):
             "training":     int(training),
             "labels":       labels,
             "attributes":   attributes,
+            "memberships":  memberships,
+            "groups":       groups,
             "roles":        roles,
             "predicates":   predicates}
 
@@ -241,3 +245,23 @@ def saveroleforjob(id, data):
     session.add(job)
     session.commit()
     return role.id
+
+@handler(post='json')
+def savegroupforjob(id, data):
+    job = session.query(Job).get(id)
+    group = GroupClass()
+    group.text = data['group']
+    job.group_classes.append(group)
+    session.add(job)
+    session.commit()
+    return group.id
+
+@handler(post='json')
+def savemembershipforjob(id, data):
+    job = session.query(Job).get(id)
+    membership = Membership()
+    membership.text = data['membership']
+    job.memberships.append(membership)
+    session.add(job)
+    session.commit()
+    return membership.id

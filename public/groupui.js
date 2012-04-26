@@ -2,7 +2,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
     var me = this;
     this.newgroupbutton = newgroupbutton;
     this.newgroupdialog = newgroupdialog;
-    this.predcontainer = groupcontainer;
+    this.groupcontainer = groupcontainer;
     this.newmembershipdialog = newmembershipdialog;
     this.groupname = {};
     this.membershipname = {};
@@ -46,7 +46,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                     $('<div class="groupblock"><div style="float:left">' + 
                       newgroupname + ' ' + newgroupnum +
                       '</div><div style="float:right">' +
-                     '<div style="float:right">' +
+                      '<div style="float:right">' +
                       '<div class="ui-icon ui-icon-trash delgroupins"' +
                       ' title="delete group"></div></div>' +
                       '<div style="float:right">' +
@@ -110,17 +110,17 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                         return;
                     }
 
-                    var role_id = $('#selmembership option:selected').val();
-                    if (!role_id) {
+                    var membership_id = $('#selmembership option:selected').val();
+                    if (!membership_id) {
                         alert('please add a membership');
                         return;
                     }
 
-                    var predinstance_id = $(this).data('link')
-                                                 .parent()
-                                                 .parent()
-                                                 .siblings('.groupinstance_id')
-                                                 .val();
+                    var groupinstance_id = $(this).data('link')
+                                                  .parent()
+                                                  .parent()
+                                                  .siblings('.groupinstance_id')
+                                                  .val();
 
                     var added = me.groups.add_track(groupinstance_id,
                                                     track_id);
@@ -129,7 +129,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                         return;
                     }
 
-                    $('<input type="checkbox" class="cbtrack" id="cbp' +
+                    $('<input type="checkbox" class="cbtrack_group" id="cbg' +
                       groupinstance_id + '_' + track_id +
                       '" value="' + track_id + '_' + membership_id + '">' + 
                       '<label for="cbp' + groupinstance_id + '_' + track_id +
@@ -143,7 +143,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                         .appendTo($(this).data('link').parent().parent().parent())
                         .show('slow');
                     // tracks should be added checked by default
-                    $('#cbp' + groupinstance_id + '_' + track_id)
+                    $('#cbg' + groupinstance_id + '_' + track_id)
                         .attr('checked', true)
                         .click();
                     $(this).dialog('close');
@@ -154,7 +154,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
             }
         });
 
-        $('input.cbtrack').live('click', function() {
+        $('input.cbtrack_group').live('click', function() {
             var groupinstance_id = $(this).siblings('.groupinstance_id').val();
             var trackmembership = $(this).val().split('_');
             me.groups.add_annotation(groupinstance_id,
@@ -189,7 +189,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                 if (!me.groups.data[idx]) continue;
                 for (var track_id in me.groups.data[idx]['annotations']) {
                     var val = me.groups.getval(idx, track_id, frame);
-                    $('#cbp' + idx + '_' + track_id).attr('checked', val);
+                    $('#cbg' + idx + '_' + track_id).attr('checked', val);
                 }
             }
         }
