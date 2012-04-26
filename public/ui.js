@@ -13,7 +13,7 @@ function ui_build(job)
     var sentences = new SentenceCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
     groupui = new GroupUI($('#newgroupbutton'), $('#newgroupdialog'), $('#groupcontainer'), $('#newmembershipdialog'), videoframe, job, player, tracks, groups);
-    predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
+    predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates, groups);
     var sentenceui = new SentenceUI($('#newsentencebutton'), $('#newsentencedialog'), $('#sentencecontainer'), job, player, sentences);
 
     ui_setupbuttons(job, player, tracks);

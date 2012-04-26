@@ -298,98 +298,6 @@ class CompletionBonus(turkic.models.BonusSchedule):
         logger.debug("Awarded completion bonus of ${0:.2f}"
                         .format(self.amount))
 
-class Role(turkic.database.Base):
-    __tablename__ = "roles"
-
-    id = Column(Integer, primary_key=True)
-    text = Column(String(250))
-    jobid = Column(Integer, ForeignKey(Job.id))
-    job = relationship(Job, backref=backref('roles',
-                                            cascade='all,delete'))
-    
-    def __str__(self):
-        return self.text
-
-class Predicate(turkic.database.Base):
-    __tablename__ = "predicates"
-
-    id = Column(Integer, primary_key=True)
-    text = Column(String(250))
-    jobid = Column(Integer, ForeignKey(Job.id))
-    job = relationship(Job, backref=backref('predicates',
-                                            cascade='all,delete'))
-    
-    def __str__(self):
-        return self.text
-
-class PredicateInstance(turkic.database.Base):
-    __tablename__ = "predicate_instances"
-
-    id = Column(Integer, primary_key = True)
-    predicateid = Column(Integer, ForeignKey(Predicate.id))
-    predicate = relationship(Predicate, backref = backref("predicate_instances",
-                                                  cascade = "all,delete"))
-    jobid = Column(Integer, ForeignKey(Job.id))
-    job = relationship(Job, backref = backref("predicate_instances", cascade="all,delete"))
-    
-    def getuniquepaths(self):
-        pathids = []
-        paths = []
-        for pa in self.predicate_annotations:
-            if (pa.pathid in pathids):
-                continue
-            else:
-                pathids.append(pa.pathid)
-                paths.append(pa.path)
-        return paths
-
-    def __str__(self):
-        return '{0}#{1}'.format(self.predicate, self.id)
-    
-class PredicateAnnotation(turkic.database.Base):
-    __tablename__ = "predicate_annotations"
-    
-    id = Column(Integer, primary_key = True)
-    predicateinstanceid = Column(Integer, ForeignKey(PredicateInstance.id))
-    predicateinstance = relationship(PredicateInstance, backref = backref("predicate_annotations",
-                                                                          cascade = "all,delete"))
-    pathid = Column(Integer, ForeignKey(Path.id))
-    path = relationship(Path, backref = backref("predicate_annotations",
-                                                cascade = "all,delete"))
-    roleid = Column(Integer, ForeignKey(Role.id))
-    role = relationship(Role, backref = backref("predicate_annotations",
-                                                cascade = "all,delete"))
-    frame = Column(Integer)
-    value = Column(Boolean, default = False)
-
-    def __str__(self):
-        return '{0}:{1}'.format(self.predicateinstance, self.role)
-
-class Sentence(turkic.database.Base):
-    __tablename__ = 'sentences'
-
-    id = Column(Integer, primary_key=True)
-    jobid = Column(Integer, ForeignKey(Job.id))
-    job = relationship(Job, backref=backref('sentences',
-                                            cascade='all,delete'))
-    text = Column(Text)
-
-    def __str(self):
-        return '<{}: {}>'.format(self.job, self.text)
-
-class SentenceAnnotation(turkic.database.Base):
-    __tablename__ = 'sentence_annotations'
-
-    id = Column(Integer, primary_key=True)
-    sentenceid = Column(Integer, ForeignKey(Sentence.id))
-    sentence = relationship(Sentence, backref=backref('annotations',
-                                                      cascade='all,delete'))
-    frame = Column(Integer)
-    value = Column(Boolean, default=False)
-
-    def __str__(self):
-        return '<{}: {} {}>'.format(self.sentence, self.frame, self.value)
-
 # added to handle groups and memberships
 class Membership(turkic.database.Base):
     __tablename__ = "memberships"
@@ -457,3 +365,98 @@ class GroupAnnotation(turkic.database.Base):
 
     def __str__(self):
         return '{0}:{1}'.format(self.groupinstance, self.role)
+
+class Role(turkic.database.Base):
+    __tablename__ = "roles"
+
+    id = Column(Integer, primary_key=True)
+    text = Column(String(250))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('roles',
+                                            cascade='all,delete'))
+    
+    def __str__(self):
+        return self.text
+
+class Predicate(turkic.database.Base):
+    __tablename__ = "predicates"
+
+    id = Column(Integer, primary_key=True)
+    text = Column(String(250))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('predicates',
+                                            cascade='all,delete'))
+    
+    def __str__(self):
+        return self.text
+
+class PredicateInstance(turkic.database.Base):
+    __tablename__ = "predicate_instances"
+
+    id = Column(Integer, primary_key = True)
+    predicateid = Column(Integer, ForeignKey(Predicate.id))
+    predicate = relationship(Predicate, backref = backref("predicate_instances",
+                                                  cascade = "all,delete"))
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref = backref("predicate_instances", cascade="all,delete"))
+    
+    def getuniquepaths(self):
+        pathids = []
+        paths = []
+        for pa in self.predicate_annotations:
+            if (pa.pathid in pathids):
+                continue
+            else:
+                pathids.append(pa.pathid)
+                paths.append(pa.path)
+        return paths
+
+    def __str__(self):
+        return '{0}#{1}'.format(self.predicate, self.id)
+    
+class PredicateAnnotation(turkic.database.Base):
+    __tablename__ = "predicate_annotations"
+    
+    id = Column(Integer, primary_key = True)
+    predicateinstanceid = Column(Integer, ForeignKey(PredicateInstance.id))
+    predicateinstance = relationship(PredicateInstance, backref = backref("predicate_annotations",
+                                                                          cascade = "all,delete"))
+    pathid = Column(Integer, ForeignKey(Path.id))
+    path = relationship(Path, backref = backref("predicate_annotations",
+                                                cascade = "all,delete"))
+    groupinstanceid = Column(Integer, ForeignKey(GroupInstance.id))
+    groupinstance = relationship(GroupInstance, backref=backref("predicate_annotations",
+                                                                cascade="all,delete"))
+    roleid = Column(Integer, ForeignKey(Role.id))
+    role = relationship(Role, backref = backref("predicate_annotations",
+                                                cascade = "all,delete"))
+    frame = Column(Integer)
+    value = Column(Boolean, default = False)
+
+    def __str__(self):
+        return '{0}:{1}'.format(self.predicateinstance, self.role)
+
+class Sentence(turkic.database.Base):
+    __tablename__ = 'sentences'
+
+    id = Column(Integer, primary_key=True)
+    jobid = Column(Integer, ForeignKey(Job.id))
+    job = relationship(Job, backref=backref('sentences',
+                                            cascade='all,delete'))
+    text = Column(Text)
+
+    def __str(self):
+        return '<{}: {}>'.format(self.job, self.text)
+
+class SentenceAnnotation(turkic.database.Base):
+    __tablename__ = 'sentence_annotations'
+
+    id = Column(Integer, primary_key=True)
+    sentenceid = Column(Integer, ForeignKey(Sentence.id))
+    sentence = relationship(Sentence, backref=backref('annotations',
+                                                      cascade='all,delete'))
+    frame = Column(Integer)
+    value = Column(Boolean, default=False)
+
+    def __str__(self):
+        return '<{}: {} {}>'.format(self.sentence, self.frame, self.value)

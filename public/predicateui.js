@@ -1,4 +1,4 @@
-function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog, videoframe, job, player, tracks, predicates) {
+function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog, videoframe, job, player, tracks, predicates, groups) {
     var me = this;
     this.newpredbutton = newpredbutton;
     this.newpreddialog = newpreddialog;
@@ -10,6 +10,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
     this.player = player;
     this.tracks = tracks;
     this.predicates = predicates;
+    this.groups = groups;
     
     this.setup = function() {
         // create newpredbutton
@@ -77,6 +78,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             ui_disabled = 1;
             //e.preventDefault();
             $('#available_tracks').empty();
+            $('#available_groups').empty();
             for (var i in me.tracks.tracks) {
                 if (me.tracks.tracks[i].deleted) {
                     continue;
@@ -85,6 +87,16 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                     '<input type="radio" name="avtracks" id="t' + i +
                     '" value="' + i + '"><label for="t' + i + '">' +
                     me.track_name(i) + '</label><br>');
+            }
+            for (var i in me.groups.data) {
+                if (!me.groups.data[i]) {
+                    continue;
+                }
+                $('#available_groups').append(
+                    '<input type="radio" name="avgroups" id="g' + i +
+                    '" value="' + i + '"><label for="g' + i + '">' +
+                    me.groups.names[me.groups.data[i]['group']] + ' '
+                    + (parseInt(i)+1) + '</label><br>');
             }
             me.newroledialog
                 .data('link', $(this))
@@ -106,8 +118,13 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 ok: function() {
                     // get the selected track type
                     var track_id = $('input[name="avtracks"]:checked').val();
-                    if (!track_id) {
-                        alert('please select a track');
+                    var group_id = $('input[name="avgroups"]:checked').val();
+                    if (!track_id && !group_id) {
+                        alert('please select a track or a group');
+                        return;
+                    }
+                    if (track_id && group_id) {
+                        alert('please select just a track or a group');
                         return;
                     }
 
@@ -123,25 +140,55 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                                                  .siblings('.predinstance_id')
                                                  .val();
 
-                    var added = me.predicates.add_track(predinstance_id,
-                                                        track_id);
-                    if (!added) {
+                    if (track_id) {
+                        var track_added = me.predicates.add_track(predinstance_id,
+                                                                  track_id);
+                    }
+                    else {
+                        var group_added = me.predicates.add_group(predinstance_id,
+                                                                  group_id);
+                    }
+
+                    if (track_id && !track_added) {
                         alert('track is already in predicate');
                         return;
                     }
-                    $('<input type="checkbox" class="cbtrack" id="cbp' +
-                      predinstance_id + '_' + track_id +
-                      '" value="' + track_id + '_' + role_id + '">' + 
-                      '<label for="cbp' + predinstance_id + '_' + track_id +
-                      '">' + me.track_name(track_id) + ' <small>(' + 
-                      me.rolename[role_id] + ')</small></label>' +
-                      '<div style="float:right">' +
-                      '<div class="ui-icon ui-icon-trash delpredarg" ' +
-                      'id="predarg_' + predinstance_id + '_' + track_id +
-                      '" title="delete this track"></div></div><br>')
-                        .hide()
-                        .appendTo($(this).data('link').parent().parent().parent())
-                        .show('slow');
+                    if (group_id && !group_added) {
+                        alert('group is already in predicate');
+                        return;
+                    }
+
+                    if (track_added) {
+                        $('<input type="checkbox" class="cbtrack" id="cbp' +
+                          predinstance_id + '_' + track_id +
+                          '" value="' + track_id + '_' + role_id + '">' +
+                          '<label for="cbp' + predinstance_id + '_' + track_id +
+                          '">' + me.track_name(track_id) + ' <small>(' + 
+                          me.rolename[role_id] + ')</small></label>' +
+                          '<div style="float:right">' +
+                          '<div class="ui-icon ui-icon-trash delpredarg" ' +
+                          'id="predarg_' + predinstance_id + '_' + track_id +
+                          '" title="delete this track"></div></div><br>')
+                            .hide()
+                            .appendTo($(this).data('link').parent().parent().parent())
+                            .show('slow');
+                    }
+                    else {
+                        $('<input type="checkbox" class="cbgroup" id="cbp' +
+                          predinstance_id + '_' + group_id +
+                          '" value="' + group_id + '_' + role_id + '">' +
+                          '<label for="cbp' + predinstance_id + '_' + group_id +
+                          '">' + me.groups.names[me.groups.data[group_id]['group']] + ' '
+                          + (parseInt(group_id)+1) + ' <small>(' + 
+                          me.rolename[role_id] + ')</small></label>' +
+                          '<div style="float:right">' +
+                          '<div class="ui-icon ui-icon-trash delpredarg" ' +
+                          'id="predarg_' + predinstance_id + '_' + group_id +
+                          '" title="delete this group"></div></div><br>')
+                            .hide()
+                            .appendTo($(this).data('link').parent().parent().parent())
+                            .show('slow');
+                    }
                     // tracks should be added checked by default
                     $('#cbp' + predinstance_id + '_' + track_id)
                         .attr('checked', true)
@@ -235,6 +282,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         me.newroledialog.append('<br><input type="text" name="new_role_txt" id="new_role_txt">' +
                                 '<button id="add_new_role">add</button>');
         me.newroledialog.append('<hr><div id="available_tracks"></div>');
+        me.newroledialog.append('<hr><div id="available_groups"></div>');
 
         $('#add_new_role').click(function () {
             var roletxt = $('#new_role_txt').val();
@@ -355,7 +403,8 @@ function PredicateCollection(player, job) {
         var idx = me.data.length;
         me.data.push({
             predicate: parseInt(pred_id),
-            annotations: {}
+            annotations: {},
+            group_annotations: {}
         });
         return idx;
     }
@@ -381,6 +430,14 @@ function PredicateCollection(player, job) {
         }
         me.deleted.push(parseInt(track_id));
     };
+
+    this.add_group = function(idx, group_id) {
+        if (group_id in me.data[idx]['group_annotations']) {
+            return false;
+        }
+        me.data[idx]['group_annotations'][group_id] = [];
+        return true;
+    }
 
     this.remove_track_for_pred = function (track_id, pred_id) {
         if (me.data[pred_id]['annotations'].hasOwnProperty(track_id)) {

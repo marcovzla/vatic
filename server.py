@@ -82,6 +82,7 @@ def getpredicateannotationsforjob(id):
         sorted_annotations = sorted(pi.predicate_annotations, 
                                     key=lambda x: x.frame)
         annotations = {}
+        group_annotations = {}
         for pa in sorted_annotations:
             a = (pa.frame, pa.roleid, pa.value)
             myid = relid(pa.pathid)
@@ -90,7 +91,8 @@ def getpredicateannotationsforjob(id):
             else:
                 annotations[myid] = [a]
         result.append({"predicate": pi.predicateid,
-                       "annotations": annotations })
+                       "annotations": annotations,
+                       "group_annotations": group_annotations})
 
     return result
 

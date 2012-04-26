@@ -218,7 +218,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
             );
         });
 
-        me.groupname = job.groups;
+        me.groups.names = me.groupname = job.groups;
         for (var g in me.groupname) {
             me.newgroupdialog.append('<input type="radio" name="groups" id="g' +
                                      g + '" value="' + g + '"><label for="g' + g + '">' +
