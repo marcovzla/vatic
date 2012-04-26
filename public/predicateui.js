@@ -172,12 +172,16 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                             .hide()
                             .appendTo($(this).data('link').parent().parent().parent())
                             .show('slow');
-                    }
+                        // tracks should be added checked by default
+                        $('#cbp' + predinstance_id + '_' + track_id)
+                            .attr('checked', true)
+                            .click();
+                   }
                     else {
-                        $('<input type="checkbox" class="cbgroup" id="cbp' +
+                        $('<input type="checkbox" class="cbgroup" id="cbpg' +
                           predinstance_id + '_' + group_id +
                           '" value="' + group_id + '_' + role_id + '">' +
-                          '<label for="cbp' + predinstance_id + '_' + group_id +
+                          '<label for="cbpg' + predinstance_id + '_' + group_id +
                           '">' + me.groups.names[me.groups.data[group_id]['group']] + ' '
                           + (parseInt(group_id)+1) + ' <small>(' + 
                           me.rolename[role_id] + ')</small></label>' +
@@ -188,11 +192,10 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                             .hide()
                             .appendTo($(this).data('link').parent().parent().parent())
                             .show('slow');
+                        $('#cbpg' + predinstance_id + '_' + group_id)
+                            .attr('checked', true)
+                            .click();
                     }
-                    // tracks should be added checked by default
-                    $('#cbp' + predinstance_id + '_' + track_id)
-                        .attr('checked', true)
-                        .click();
                     $(this).dialog('close');
                 },
                 cancel: function() {
