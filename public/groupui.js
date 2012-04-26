@@ -75,12 +75,12 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
         $('.addmembership').live('click', function(e) {
             ui_disabled = 1;
             //e.preventDefault();
-            $('#available_tracks').empty();
+            $('#available_tracks_groups').empty();
             for (var i in me.tracks.tracks) {
                 if (me.tracks.tracks[i].deleted) {
                     continue;
                 }
-                $('#available_tracks').append(
+                $('#available_tracks_groups').append(
                     '<input type="radio" name="avtracks" id="t' + i +
                     '" value="' + i + '"><label for="t' + i + '">' +
                     me.track_name(i) + '</label><br>');
@@ -234,7 +234,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
         me.newmembershipdialog.append(select);
         me.newmembershipdialog.append('<br><input type="text" name="new_membership_txt" id="new_membership_txt">' +
                                       '<button id="add_new_membership">add</button>');
-        me.newmembershipdialog.append('<hr><div id="available_tracks"></div>');
+        me.newmembershipdialog.append('<hr><div id="available_tracks_groups"></div>');
 
         $('#add_new_membership').click(function () {
             var membershiptxt = $('#new_membership_txt').val();
