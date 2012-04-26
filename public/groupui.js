@@ -315,7 +315,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
 
             for (var j in me.groups.data[i]['annotations']) {
                 var track_id = j;
-                var role_id = me.groups.data[i]['annotations'][j][0][1]; // XXX not safe
+                var membership_id = me.groups.data[i]['annotations'][j][0][1]; // XXX not safe
                 var trackname = me.track_name(j);
                 $('<input type="checkbox" class="cbtrack" id="cbp' +
                   group_instance + '_' + track_id +

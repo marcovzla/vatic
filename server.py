@@ -94,6 +94,30 @@ def getpredicateannotationsforjob(id):
 
     return result
 
+@handler()
+def getgroupannotationsforjob(id):
+    job = session.query(Job).get(id)
+    def relid(pathid):
+        for i,p in enumerate(job.paths):
+            if p.id == pathid:
+                return i
+    result = []
+    for gi in job.group_instances:
+        sorted_annotations = sorted(gi.group_annotations,
+                                    key=lambda x: x.frame)
+        annotations = {}
+        for ga in sorted_annotations:
+            a = (ga.frame, ga.membershipid, ga.value)
+            myid = relid(ga.pathid)
+            if annotations.has_key(myid):
+                annotations[myid].append(a)
+            else:
+                annotations[myid] = [a]
+        result.append({"group": gi.groupclassid,
+                       "annotations": annotations})
+
+    return result
+
 def readpaths(tracks):
     paths = []
     logger.debug("Reading {0} total tracks".format(len(tracks)))

@@ -1,5 +1,6 @@
 var ui_disabled = 0;
 var predicateui = null;
+var groupui = null;
 
 function ui_build(job)
 {
@@ -11,7 +12,7 @@ function ui_build(job)
     var predicates = new PredicateCollection(player, job);
     var sentences = new SentenceCollection(player, job);
     var objectui = new TrackObjectUI($("#newobjectbutton"), $("#objectcontainer"), videoframe, job, player, tracks);
-    var groupui = new GroupUI($('#newgroupbutton'), $('#newgroupdialog'), $('#groupcontainer'), $('#newmembershipdialog'), videoframe, job, player, tracks, groups);
+    groupui = new GroupUI($('#newgroupbutton'), $('#newgroupdialog'), $('#groupcontainer'), $('#newmembershipdialog'), videoframe, job, player, tracks, groups);
     predicateui = new PredicateUI($('#newpredicatebutton'), $('#newpredicatedialog'), $('#predicatecontainer'), $('#newroledialog'), videoframe, job, player, tracks, predicates);
     var sentenceui = new SentenceUI($('#newsentencebutton'), $('#newsentencedialog'), $('#sentencecontainer'), job, player, sentences);
 
@@ -463,6 +464,7 @@ function ui_loadprevious(job, objectui)
 
         objectui.showkeyframes();
         predicateui.draw_data();
+        groupui.draw_data();
     });
 
 }
