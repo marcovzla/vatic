@@ -418,7 +418,7 @@ function GroupCollection(player, job) {
             var group = me.data[group_id];
             if (!group) continue;
             var group2 = {};
-            group2['group'] = pred['group'];
+            group2['group'] = group['group'];
             group2['annotations'] = {};
             for (var tid in group['annotations']) {
                 var ntid = parseInt(tid);

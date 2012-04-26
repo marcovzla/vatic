@@ -17,7 +17,7 @@ function ui_build(job)
 
     ui_setupbuttons(job, player, tracks);
     ui_setupslider(player);
-    ui_setupsubmit(job, tracks, predicates, sentences);
+    ui_setupsubmit(job, tracks, predicates, sentences, groups);
     ui_setupclickskip(job, player, tracks, objectui);
     ui_setupkeyboardshortcuts(job, player);
     ui_loadprevious(job, objectui);
@@ -467,7 +467,7 @@ function ui_loadprevious(job, objectui)
 
 }
 
-function ui_setupsubmit(job, tracks, predicates, sentences)
+function ui_setupsubmit(job, tracks, predicates, sentences, groups)
 {
     $("#submitbutton").button({
         icons: {
@@ -475,20 +475,21 @@ function ui_setupsubmit(job, tracks, predicates, sentences)
         }
     }).click(function() {
         if (ui_disabled) return;
-        ui_submit(job, tracks, predicates, sentences);
+        ui_submit(job, tracks, predicates, sentences, groups);
     });
 }
 
-function serialize_all(tracks, predicates, sentences) {
+function serialize_all(tracks, predicates, sentences, groups) {
     return '{"tracks":' + tracks.serialize() + 
              ',"predicates":' + predicates.serialize() +
-             ',"sentences":' + sentences.serialize() + '}';
+             ',"sentences":' + sentences.serialize() +
+             ',"groups":' + groups.serialize() + '}';
 }
 
-function ui_submit(job, tracks, predicates, sentences)
+function ui_submit(job, tracks, predicates, sentences, groups)
 {
     console.dir(tracks);
-    console.log("Start submit - status: " + serialize_all(tracks, predicates, sentences));
+    console.log("Start submit - status: " + serialize_all(tracks, predicates, sentences, groups));
 
     if (!mturk_submitallowed())
     {
@@ -515,7 +516,7 @@ function ui_submit(job, tracks, predicates, sentences)
 
     function validatejob(callback)
     {
-        server_post("validatejob", [job.jobid], serialize_all(tracks, predicates, sentences),
+        server_post("validatejob", [job.jobid], serialize_all(tracks, predicates, sentences, groups),
             function(valid) {
                 if (valid)
                 {
@@ -543,7 +544,7 @@ function ui_submit(job, tracks, predicates, sentences)
     function savejob(callback)
     {
         server_post("savejob", [job.jobid],
-            serialize_all(tracks, predicates, sentences), function(data) {
+            serialize_all(tracks, predicates, sentences, groups), function(data) {
                 callback()
             });
     }

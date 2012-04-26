@@ -140,6 +140,28 @@ def getsentenceannotationsforjob(id):
         })
     return results
 
+def readgroups(groups, paths):
+    groupInstances = []
+    logger.debug("Reading {0} total predicate instances".format(len(groups)))
+
+    for g in groups:
+        gi = GroupInstance()
+        gi.groupclass = session.query(GroupClass).get(int(g['group']))
+
+        for pathid in g['annotations'].keys():
+            path = paths[int(pathid)]
+            for frame, membershipid, value in g['annotations'][pathid]:
+                ga = GroupAnnotation()
+                ga.groupinstance = gi
+                ga.path = path
+                ga.membership = session.query(Membership).get(membershipid)
+                ga.frame = frame
+                ga.value = value
+
+        groupInstances.append(gi)
+
+    return groupInstances
+
 def readpredicates(predicates, paths):
     predicateInstances = []
     logger.debug("Reading {0} total predicate instances".format(len(predicates)))
@@ -182,6 +204,10 @@ def savejob(id, data):
 
     for path in job.paths:
         session.delete(path)
+    for gi in job.group_instances:
+        for ga in gi.group_annotations:
+            session.delete(ga)
+        session.delete(gi)
     for pi in job.predicate_instances:
         for pa in pi.predicate_annotations:
             session.delete(pa)
@@ -195,6 +221,8 @@ def savejob(id, data):
     paths = readpaths(data["tracks"])
     for path in paths:
         job.paths.append(path)
+    for gi in readgroups(data['groups'], paths):
+        job.group_instances.append(gi)
     for pi in readpredicates(data["predicates"], paths):
         job.predicate_instances.append(pi)
     for s in readsentences(data['sentences']):
