@@ -10,7 +10,9 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
     this.player = player;
     this.tracks = tracks;
     this.groups = groups;
-    
+    this.groups.names = job.groups;
+    this.groups.data = this.job.groupannotations;
+
     this.setup = function() {
         // create newpredbutton
         this.newgroupbutton.button({
@@ -132,7 +134,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                     $('<input type="checkbox" class="cbtrack_group" id="cbg' +
                       groupinstance_id + '_' + track_id +
                       '" value="' + track_id + '_' + membership_id + '">' + 
-                      '<label for="cbp' + groupinstance_id + '_' + track_id +
+                      '<label for="cbg' + groupinstance_id + '_' + track_id +
                       '">' + me.track_name(track_id) + ' <small>(' + 
                       me.membershipname[membership_id] + ')</small></label>' +
                       '<div style="float:right">' +
@@ -167,7 +169,7 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
         $('.delgrouparg').live('click', function () {
             var grouptrack = $(this).attr('id').split('_');
             var group_id = grouptrack[1];
-            var group_id = grouptrack[2];
+            var track_id = grouptrack[2];
             me.remove_track_for_group(track_id, group_id);
         });
 
@@ -317,10 +319,10 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
                 var track_id = j;
                 var membership_id = me.groups.data[i]['annotations'][j][0][1]; // XXX not safe
                 var trackname = me.track_name(j);
-                $('<input type="checkbox" class="cbtrack" id="cbp' +
+                $('<input type="checkbox" class="cbtrack_group" id="cbg' +
                   group_instance + '_' + track_id +
                   '" value="' + track_id + '_' + membership_id + '">' + 
-                  '<label for="cbp' + group_instance + '_' + track_id +
+                  '<label for="cbg' + group_instance + '_' + track_id +
                   '">' + trackname + ' <small>(' + me.membershipname[membership_id] +
                   ')</small></label><div style="float:right">' +
                   '<div class="ui-icon ui-icon-trash delgrouparg" ' +
@@ -333,12 +335,12 @@ function GroupUI(newgroupbutton, newgroupdialog, groupcontainer, newmembershipdi
     }
 
     this.draw_data = function() {
-        $.getJSON('/server/getgroupannotationsforjob/' + me.job.jobid, function(data) {
-            if (data.length > 0) {
-                me.groups.data = data;
+//        $.getJSON('/server/getgroupannotationsforjob/' + me.job.jobid, function(data) {
+//            if (data.length > 0) {
+//                predicateui.draw_data();
                 me.draw_my_data();
-            }
-        });
+//            }
+//        });
     }
     
     this.setup();
@@ -362,6 +364,7 @@ function GroupCollection(player, job) {
 
     this.remove_group = function (idx) {
         me.data[idx] = null;
+        predicateui.remove_track(me.id);
     };
 
     this.add_track = function(idx, track_id) {

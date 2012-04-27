@@ -57,6 +57,7 @@ def getjob(id, verified):
             "memberships":  memberships,
             "groups":       groups,
             "roles":        roles,
+            "groupannotations": getgroupannotationsforjob(job),
             "predicates":   predicates}
 
 @handler()
@@ -77,6 +78,10 @@ def getpredicateannotationsforjob(id):
         for i,p in enumerate(job.paths):
             if p.id == pathid:
                 return i
+    def relid2(groupid):
+        for i,g in enumerate(job.group_instances):
+            if g.id == groupid:
+                return i
     result = []
     for pi in job.predicate_instances:
         sorted_annotations = sorted(pi.predicate_annotations, 
@@ -85,20 +90,25 @@ def getpredicateannotationsforjob(id):
         group_annotations = {}
         for pa in sorted_annotations:
             a = (pa.frame, pa.roleid, pa.value)
-            myid = relid(pa.pathid)
-            if annotations.has_key(myid):
-                annotations[myid].append(a)
+            if pa.pathid:
+                myid = relid(pa.pathid)
+                if annotations.has_key(myid):
+                    annotations[myid].append(a)
+                else:
+                    annotations[myid] = [a]
             else:
-                annotations[myid] = [a]
+                myid = relid2(pa.groupinstanceid)
+                if group_annotations.has_key(myid):
+                    group_annotations[myid].append(a)
+                else:
+                    group_annotations[myid] = [a]
         result.append({"predicate": pi.predicateid,
                        "annotations": annotations,
                        "group_annotations": group_annotations})
 
     return result
 
-@handler()
-def getgroupannotationsforjob(id):
-    job = session.query(Job).get(id)
+def getgroupannotationsforjob(job):
     def relid(pathid):
         for i,p in enumerate(job.paths):
             if p.id == pathid:
@@ -188,20 +198,30 @@ def readgroups(groups, paths):
 
     return groupInstances
 
-def readpredicates(predicates, paths):
+def readpredicates(predicates, paths, groups):
     predicateInstances = []
     logger.debug("Reading {0} total predicate instances".format(len(predicates)))
     
     for p in predicates:
         pi = PredicateInstance()
         pi.predicate = session.query(Predicate).get(int(p['predicate']))
-        
+
         for pathid in p['annotations'].keys():
             path = paths[int(pathid)]
             for frame, roleid, value in p['annotations'][pathid]:
                 pa = PredicateAnnotation()
                 pa.predicateinstance = pi
                 pa.path = path
+                pa.role = session.query(Role).get(roleid)
+                pa.frame = frame
+                pa.value = value
+
+        for groupid in p['group_annotations'].keys():
+            group = groups[int(groupid)]
+            for frame, roleid, value in p['group_annotations'][groupid]:
+                pa = PredicateAnnotation()
+                pa.predicateinstance = pi
+                pa.groupinstance = group
                 pa.role = session.query(Role).get(roleid)
                 pa.frame = frame
                 pa.value = value
@@ -245,11 +265,12 @@ def savejob(id, data):
     session.commit()
     
     paths = readpaths(data["tracks"])
+    groups = readgroups(data['groups'], paths)
     for path in paths:
         job.paths.append(path)
-    for gi in readgroups(data['groups'], paths):
+    for gi in groups:
         job.group_instances.append(gi)
-    for pi in readpredicates(data["predicates"], paths):
+    for pi in readpredicates(data["predicates"], paths, groups):
         job.predicate_instances.append(pi)
     for s in readsentences(data['sentences']):
         job.sentences.append(s)

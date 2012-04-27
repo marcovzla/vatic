@@ -43,6 +43,7 @@ function job_import(data)
     job.roles = data['roles'];
     job.memberships = data['memberships'];
     job.groups = data['groups'];
+    job.groupannotations = data['groupannotations'];
 
     console.log("Job configured!");
     console.log("  Slug: " + job.slug);

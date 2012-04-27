@@ -214,11 +214,26 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                                          this.checked);
         });
 
+        $('input.cbgroup').live('click', function () {
+            var predinstance_id = $(this).siblings('.predinstance_id').val();
+            var grouprole = $(this).val().split('_');
+            me.predicates.add_group_annotation(predinstance_id,
+                                               grouprole[0],
+                                               me.player.frame,
+                                               grouprole[1],
+                                               this.checked);
+        });
+
         $('.delpredarg').live('click', function () {
             var predtrack = $(this).attr('id').split('_');
             var pred_id = predtrack[1];
             var track_id = predtrack[2];
-            me.remove_track_for_pred(track_id, pred_id);
+            if ($(this).parent().siblings('input').hasClass('cbtrack')) {
+                me.remove_track_for_pred(track_id, pred_id);
+            }
+            else {
+                me.remove_group_for_pred(track_id, pred_id);
+            }
         });
 
         $('.delpredins').live('click', function () {
@@ -240,6 +255,10 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 for (var track_id in me.predicates.data[idx]['annotations']) {
                     var val = me.predicates.getval(idx, track_id, frame);
                     $('#cbp' + idx + '_' + track_id).attr('checked', val);
+                }
+                for (var group_id in me.predicates.data[idx]['group_annotations']) {
+                    var val = me.predicates.getvalgrp(idx, group_id, frame);
+                    $('#cbpg' + idx + '_' + group_id).attr('checked', val);
                 }
             }
         }
@@ -315,10 +334,22 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
         me.predicates.remove_track(track_id);
         me.predcontainer.empty();
         me.draw_my_data();
-    }
+    };
+
+    this.remove_group = function (group_id) {
+        me.predicates.remove_group(group_id);
+        me.predcontainer.empty();
+        me.draw_my_data();
+    };
 
     this.remove_track_for_pred = function (track_id, pred_id) {
         me.predicates.remove_track_for_pred(track_id, pred_id);
+        me.predcontainer.empty();
+        me.draw_my_data();
+    };
+
+    this.remove_group_for_pred = function (group_id, pred_id) {
+        me.predicates.remove_group_for_pred(group_id, pred_id);
         me.predcontainer.empty();
         me.draw_my_data();
     };
@@ -379,6 +410,25 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                   '" title="delete this track"></div></div><br>')
                     .appendTo(pred);
             }
+
+            for (var j in me.predicates.data[i]['group_annotations']) {
+                var group_id = j;
+                var role_id = me.predicates.data[i]['group_annotations'][j][0][1];
+                if (!me.groups.data[j]) {
+                    continue;
+                }
+                var groupname = me.groups.names[me.groups.data[j]['group']] + ' ' + (parseInt(j)+1);
+                $('<input type="checkbox" class="cbgroup" id="cbpg' +
+                  pred_instance + '_' + group_id +
+                  '" value="' + group_id + '_' + role_id + '">' +
+                  '<label for="cbpg' + pred_instance + '_' + group_id +
+                  '">' + groupname + ' <small>(' + me.rolename[role_id] +
+                  ')</small></label><div style="float:right">' +
+                  '<div class="ui-icon ui-icon-trash delpredarg" ' +
+                  'id="predarg_' + pred_instance + '_' + group_id +
+                  '" title="delete this group"></div></div><br>')
+                    .appendTo(pred);
+            }
         }
         me.update_checkboxes();
     }
@@ -401,6 +451,7 @@ function PredicateCollection(player, job) {
     this.job = job;
     this.data = [];
     this.deleted = [];
+    this.deleted_group = [];
 
     this.new_predicate = function(pred_id) {
         var idx = me.data.length;
@@ -434,6 +485,12 @@ function PredicateCollection(player, job) {
         me.deleted.push(parseInt(track_id));
     };
 
+    this.remove_track_for_pred = function (track_id, pred_id) {
+        if (me.data[pred_id]['annotations'].hasOwnProperty(track_id)) {
+            delete me.data[pred_id]['annotations'][track_id];
+        }
+    }
+
     this.add_group = function(idx, group_id) {
         if (group_id in me.data[idx]['group_annotations']) {
             return false;
@@ -442,9 +499,18 @@ function PredicateCollection(player, job) {
         return true;
     }
 
-    this.remove_track_for_pred = function (track_id, pred_id) {
-        if (me.data[pred_id]['annotations'].hasOwnProperty(track_id)) {
-            delete me.data[pred_id]['annotations'][track_id];
+    this.remove_group = function (group_id) {
+        for (var pred_id in me.data) {
+            if (me.data[pred_id]['group_annotations'].hasOwnProperty(group_id)) {
+                delete me.data[pred_id]['group_annotations'][group_id];
+            }
+        }
+        me.deleted_group.push(parseInt(group_id));
+    }
+
+    this.remove_group_for_pred = function (group_id, pred_id) {
+        if (me.data[pred_id]['group_annotations'].hasOwnProperty(group_id)) {
+            delete me.data[pred_id]['group_annotations'][group_id];
         }
     }
 
@@ -460,6 +526,18 @@ function PredicateCollection(player, job) {
         annotations.push([frame, parseInt(role_id), value]);
     }
 
+    this.add_group_annotation = function (idx, group_id, frame, role_id, value) {
+        var group_annotations = me.data[idx]['group_annotations'][group_id];
+        for (var i in group_annotations) {
+            var f = group_annotations[i][0];
+            if (f >= frame) {
+                group_annotations.splice(i);
+                break;
+            }
+        }
+        group_annotations.push([frame, parseInt(role_id), value]);
+    }
+
     this.getval = function(idx, track_id, frame) {
         var val = false;
         var annotations = me.data[idx]['annotations'][track_id];
@@ -473,6 +551,19 @@ function PredicateCollection(player, job) {
         return val;
     }
 
+    this.getvalgrp = function (idx, group_id, frame) {
+        var val = false;
+        var annotations = me.data[idx]['group_annotations'][group_id];
+        for (var i in annotations) {
+            var f = annotations[i][0];
+            if (f > frame) {
+                break;
+            }
+            val = annotations[i][2];
+        }
+        return val;
+    };
+
     this.serialize = function() {
         var data = [];
         for (var pred_id in me.data) {
@@ -481,6 +572,7 @@ function PredicateCollection(player, job) {
             var pred2 = {};
             pred2['predicate'] = pred['predicate'];
             pred2['annotations'] = {};
+            pred2['group_annotations'] = {};
             for (var tid in pred['annotations']) {
                 var ntid = parseInt(tid);
                 var ntid2 = ntid;
@@ -490,6 +582,16 @@ function PredicateCollection(player, job) {
                     }
                 }
                 pred2['annotations'][ntid2.toString()] = pred['annotations'][tid];
+            }
+            for (var gid in pred['group_annotations']) {
+                var ngid = parseInt(gid);
+                var ngid2 = ngid;
+                for (var i in me.deleted_group) {
+                    if (ngid > me.deleted_group[i]) {
+                        ngid2 -= 1;
+                    }
+                }
+                pred2['group_annotations'][ngid2.toString()] = pred['group_annotations'][ngid];
             }
             data.push(pred2);
         }
