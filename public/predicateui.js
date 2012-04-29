@@ -175,7 +175,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                           me.rolename[role_id] + ')</small></label>' +
                           '<div style="float:right">' +
                           '<div class="ui-icon ui-icon-trash delpredarg" ' +
-                          'id="predarg_' + predinstance_id + '_' + track_id +
+                          'id="cbp_' + predinstance_id + '_' + track_id +
                           '" title="delete this track"></div></div><br>')
                             .hide()
                             .appendTo($(this).data('link').parent().parent().parent())
@@ -195,7 +195,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                           me.rolename[role_id] + ')</small></label>' +
                           '<div style="float:right">' +
                           '<div class="ui-icon ui-icon-trash delpredarg" ' +
-                          'id="predarg_' + predinstance_id + '_' + group_id +
+                          'id="cbpg_' + predinstance_id + '_' + group_id +
                           '" title="delete this group"></div></div><br>')
                             .hide()
                             .appendTo($(this).data('link').parent().parent().parent())
@@ -236,7 +236,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             var predtrack = $(this).attr('id').split('_');
             var pred_id = predtrack[1];
             var track_id = predtrack[2];
-            if ($(this).parent().siblings('input').hasClass('cbtrack')) {
+            if (predtrack[0] == 'cbp') {
                 me.remove_track_for_pred(track_id, pred_id);
             }
             else {
@@ -414,7 +414,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                   '">' + trackname + ' <small>(' + me.rolename[role_id] +
                   ')</small></label><div style="float:right">' +
                   '<div class="ui-icon ui-icon-trash delpredarg" ' +
-                  'id="predarg_' + pred_instance + '_' + track_id +
+                  'id="cbp_' + pred_instance + '_' + track_id +
                   '" title="delete this track"></div></div><br>')
                     .appendTo(pred);
             }
@@ -433,7 +433,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                   '">' + groupname + ' <small>(' + me.rolename[role_id] +
                   ')</small></label><div style="float:right">' +
                   '<div class="ui-icon ui-icon-trash delpredarg" ' +
-                  'id="predarg_' + pred_instance + '_' + group_id +
+                  'id="cbpg_' + pred_instance + '_' + group_id +
                   '" title="delete this group"></div></div><br>')
                     .appendTo(pred);
             }
