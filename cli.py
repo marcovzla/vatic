@@ -547,6 +547,7 @@ class dump(DumpCommand):
             action="store_true", default=False)
         parser.add_argument("--labelme", "-vlm",
             action="store", default=False)
+        parser.add_argument("--sentences", action="store_true", default=False)
         parser.add_argument("--pascal", action="store_true", default=False)
         parser.add_argument("--pascal-difficult", type = int, default = 100)
         parser.add_argument("--pascal-skip", type = int, default = 15)
@@ -603,6 +604,8 @@ class dump(DumpCommand):
                 print "Warning: you should manually update the JPEGImages"
             self.dumppascal(file, video, data, args.pascal_difficult,
                             args.pascal_skip, args.pascal_negatives)
+        elif args.sentences:
+            self.dumpsentences(file, args.slug)
         else:
             self.dumptext(file, data)
 
@@ -722,6 +725,41 @@ class dump(DumpCommand):
 
         import pickle
         pickle.dump(annotations, file, protocol = 2)
+
+    def dumpsentences(self, file, slug):
+        def merge(annotations):
+            # FIXME this function was introduced because the annotations
+            # are not ordered increasingly by frame in the database
+            # this should be fixed
+            annotations = [[a.frame,a.value] for a in annotations]
+            for i in xrange(1,len(annotations)):
+                if annotations[i-1][0] > annotations[i][0]:
+                    annotations[i][0] = annotations[i-1][0]
+                    annotations[i-1] = None
+            return [a for a in annotations if a]
+
+        video = session.query(Video).filter(Video.slug == slug)
+        if video.count() == 0:
+            print "Video {0} does not exist!".format(slug)
+            raise SystemExit()
+        video = video.one()
+
+        for segment in video.segments:
+            for job in segment.jobs:
+                for sentence in job.sentences:
+                    text = sentence.text
+                    start = None
+                    for annotation in merge(sentence.annotations):
+                        if annotation[1]:
+                            if not start:
+                                start = annotation[0]
+                        elif start is not None:
+                            end = annotation[0]
+                            file.write('"{}",{},{}\n'.format(text,start,end))
+                            start = end = None
+                    if start:
+                        end = video.totalframes
+                        file.write('"{}",{},{}\n'.format(text,start,end))
 
     def dumptext(self, file, data):
         for id, track in enumerate(data):
