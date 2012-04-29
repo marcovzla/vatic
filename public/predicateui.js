@@ -103,6 +103,14 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
                 .dialog('open');
         });
 
+        $('input[name="avtracks"]').live('click', function () {
+            $('input[name="avgroups"]').attr('checked', false);
+        });
+
+        $('input[name="avgroups"]').live('click', function () {
+            $('input[name="avtracks"]').attr('checked', false);
+        });
+
         this.newroledialog.dialog({
             title: 'add track',
             autoOpen: false,
