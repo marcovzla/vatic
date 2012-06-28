@@ -43,6 +43,9 @@ function SentenceUI(newsentencebutton, newsentencedialog, sentencecontainer, job
                         .appendTo(me.sentencecontainer)
                         .show('slow');
 
+                    // add sentences checked by default
+                    $('#cbs'+sent_id).attr('checked', true).click();
+
                     $(this).dialog('close');
                 },
                 cancel: function() {
