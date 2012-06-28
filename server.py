@@ -169,7 +169,8 @@ def getsentenceannotationsforjob(id):
     job = session.query(Job).get(id)
     results = []
     for s in job.sentences:
-        annotations = [(a.frame, a.value) for a in s.annotations]
+        annotations = [(a.frame, a.value)
+                       for a in sorted(s.annotations, key=lambda x: x.frame)]
         results.append({
             'sentence': s.text,
             'annotations': annotations,
