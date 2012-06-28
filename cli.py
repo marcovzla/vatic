@@ -727,16 +727,25 @@ class dump(DumpCommand):
         pickle.dump(annotations, file, protocol = 2)
 
     def dumpsentences(self, file, slug):
-        def merge(annotations):
-            # FIXME this function was introduced because the annotations
-            # are not ordered increasingly by frame in the database
-            # this should be fixed
-            annotations = [[a.frame,a.value] for a in annotations]
-            for i in xrange(1,len(annotations)):
-                if annotations[i-1][0] > annotations[i][0]:
-                    annotations[i][0] = annotations[i-1][0]
-                    annotations[i-1] = None
-            return [a for a in annotations if a]
+        def merge(annotations, totalframes):
+            merged = []
+            val = False
+            annot = None
+            for a in sorted(annotations, key=lambda x: x.frame):
+                if a.value == val:
+                    continue
+                else:
+                    val = a.value
+                if not annot:
+                    annot = [a.frame, None]
+                else:
+                    annot[1] = a.frame
+                    merged.append(annot)
+                    annot = None
+            if annot and not annot[1]:
+                annot[1] = totalframes
+                merged.append(annot)
+            return merged
 
         video = session.query(Video).filter(Video.slug == slug)
         if video.count() == 0:
@@ -748,18 +757,9 @@ class dump(DumpCommand):
             for job in segment.jobs:
                 for sentence in job.sentences:
                     text = sentence.text
-                    start = None
-                    for annotation in merge(sentence.annotations):
-                        if annotation[1]:
-                            if not start:
-                                start = annotation[0]
-                        elif start is not None:
-                            end = annotation[0]
-                            file.write('"{}",{},{}\n'.format(text,start,end))
-                            start = end = None
-                    if start:
-                        end = video.totalframes
-                        file.write('"{}",{},{}\n'.format(text,start,end))
+                    for annotation in merge(sentence.annotations,
+                                            video.totalframes):
+                        file.write('"{}",{},{}\n'.format(text, *annotation))
 
     def dumptext(self, file, data):
         for id, track in enumerate(data):
