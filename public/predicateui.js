@@ -94,6 +94,7 @@ function PredicateUI(newpredbutton, newpreddialog, predcontainer, newroledialog,
             width: 400,
             close: function() {
                 $('#selrole option:eq(0)').attr('selected', true);
+                ui_disabled = 0;
             },
             buttons: {
                 ok: function() {
