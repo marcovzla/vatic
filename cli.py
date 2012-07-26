@@ -21,6 +21,7 @@ import merge
 import parsedatetime.parsedatetime
 import datetime, time
 from xml.etree import ElementTree
+from collections import defaultdict
 
 @handler("Decompresses an entire video into frames")
 class extract(Command):
@@ -554,6 +555,7 @@ class dump(DumpCommand):
         parser.add_argument("--scale", "-s", default = 1.0, type = float)
         parser.add_argument("--dimensions", "-d", default = None)
         parser.add_argument("--original-video", "-v", default = None)
+        parser.add_argument("--predicates", action="store_true", default=False)
         return parser
 
     def __call__(self, args):
@@ -603,6 +605,8 @@ class dump(DumpCommand):
                 print "Warning: you should manually update the JPEGImages"
             self.dumppascal(file, video, data, args.pascal_difficult,
                             args.pascal_skip, args.pascal_negatives)
+        elif args.predicates:
+            self.dumppredicates(file, args.slug)
         else:
             self.dumptext(file, data)
 
@@ -612,6 +616,43 @@ class dump(DumpCommand):
             file.close()
         else:
             sys.stdout.write(file.getvalue())
+
+    def dumppredicates(self, file, slug):
+        def merge(annotations, paths, totalframes):
+            merged = defaultdict(list)
+            for a in sorted(annotations, key=lambda x: x.frame):
+                pathname = "%s %s" % (a.path.label.text, 
+                                      paths.index(a.path)+1)
+                if not merged[pathname] or merged[pathname][-1][-1] is not None:
+                    if a.value == False:
+                        continue
+                    merged[pathname].append([a.role.text, a.frame, None])
+                else:
+                    if a.value == True:
+                        continue
+                    merged[pathname][-1][-1] = a.frame
+            for p in merged:
+                if merged[p] and not merged[p][-1][-1]:
+                    merged[p][-1][-1] = totalframes
+            return merged
+
+        video = session.query(Video).filter(Video.slug==slug)
+        if video.count() == 0:
+            print "Video {} does not exist!".format(slug)
+            raise SystemExit()
+        video = video.one()
+
+        for segment in video.segments:
+            for job in segment.jobs:
+                for i,pred in enumerate(job.predicate_instances, start=1):
+                    predname = '%s %s' % (pred.predicate.text, i)
+                    merged = merge(pred.predicate_annotations,
+                                   list(job.paths), video.totalframes)
+                    for p in merged:
+                        for a in merged[p]:
+                            file.write('"{}","{}","{}",{},{}\n'.format(
+                                predname, p, *a))
+
 
     def dumpmatlab(self, file, data, video, scale):
         results = []
